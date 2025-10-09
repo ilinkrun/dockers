@@ -1,0 +1,27 @@
+{
+  "name": "platforms-manager",
+  "version": "1.0.0",
+  "description": "Platform and Project Management System",
+  "private": true,
+  "workspaces": [
+    "api",
+    "web",
+    "scripts"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=api & npm run dev --workspace=web",
+    "dev:api": "npm run dev --workspace=api",
+    "dev:web": "npm run dev --workspace=web",
+    "build": "npm run build --workspace=api && npm run build --workspace=web",
+    "build:api": "npm run build --workspace=api",
+    "build:web": "npm run build --workspace=web",
+    "start": "npm run start --workspace=api & npm run start --workspace=web",
+    "start:api": "npm run start --workspace=api",
+    "start:web": "npm run start --workspace=web",
+    "clean": "rm -rf node_modules api/node_modules web/node_modules"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=9.0.0"
+  }
+}

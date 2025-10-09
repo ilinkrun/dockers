@@ -1,0 +1,29 @@
+{
+  "name": "kmc-project-4-frontend",
+  "version": "1.0.0",
+  "description": "kmc-project-4 frontend application",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "^13.5.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@apollo/client": "^3.7.0",
+    "graphql": "^16.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "typescript": "^4.8.0",
+    "eslint": "^8.0.0",
+    "eslint-config-next": "^13.5.0",
+    "dotenv": "^16.0.0"
+  }
+}

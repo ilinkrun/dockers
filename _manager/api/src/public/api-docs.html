@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platform Manager API Documentation</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .endpoint {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .endpoint-header {
+            background: #007bff;
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+        }
+        .endpoint-body {
+            padding: 20px;
+        }
+        .method {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .get { background: #28a745; color: white; }
+        .post { background: #007bff; color: white; }
+        .put { background: #ffc107; color: black; }
+        .delete { background: #dc3545; color: white; }
+        .example {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+            overflow-x: auto;
+        }
+        .test-button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 Platform Manager API Documentation</h1>
+        <p>Base URL: <code id="baseUrl">http://1.231.118.217:20101</code></p>
+        <p>Health Check: <a href="/health" target="_blank">/health</a></p>
+    </div>
+
+    <h2>📋 Platform Management</h2>
+
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="method get">GET</span> /api/platforms
+        </div>
+        <div class="endpoint-body">
+            <p><strong>Description:</strong> Get all platforms</p>
+            <div class="example">
+curl -X GET http://1.231.118.217:20101/api/platforms
+            </div>
+            <button class="test-button" onclick="testAPI('GET', '/api/platforms')">Test API</button>
+        </div>
+    </div>
+
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="method post">POST</span> /api/platforms
+        </div>
+        <div class="endpoint-body">
+            <p><strong>Description:</strong> Create a new platform</p>
+            <div class="example">
+curl -X POST http://1.231.118.217:20101/api/platforms \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "my-platform",
+    "description": "My development platform",
+    "githubUser": "myuser"
+  }'
+            </div>
+            <button class="test-button" onclick="testCreatePlatform()">Test Create Platform</button>
+        </div>
+    </div>
+
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="method get">GET</span> /api/platforms/{id}
+        </div>
+        <div class="endpoint-body">
+            <p><strong>Description:</strong> Get platform by ID</p>
+            <div class="example">
+curl -X GET http://1.231.118.217:20101/api/platforms/my-platform
+            </div>
+            <button class="test-button" onclick="testAPI('GET', '/api/platforms/my-platform')">Test API</button>
+        </div>
+    </div>
+
+    <h2>📦 Project Management</h2>
+
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="method get">GET</span> /api/projects
+        </div>
+        <div class="endpoint-body">
+            <p><strong>Description:</strong> Get all projects</p>
+            <div class="example">
+curl -X GET http://1.231.118.217:20101/api/projects
+            </div>
+            <button class="test-button" onclick="testAPI('GET', '/api/projects')">Test API</button>
+        </div>
+    </div>
+
+    <div class="endpoint">
+        <div class="endpoint-header">
+            <span class="method post">POST</span> /api/projects
+        </div>
+        <div class="endpoint-body">
+            <p><strong>Description:</strong> Create a new project</p>
+            <div class="example">
+curl -X POST http://1.231.118.217:20101/api/projects \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "my-project",
+    "platformId": "my-platform",
+    "description": "My development project",
+    "githubUser": "myuser"
+  }'
+            </div>
+            <button class="test-button" onclick="testCreateProject()">Test Create Project</button>
+        </div>
+    </div>
+
+    <div id="results" style="margin-top: 30px;">
+        <h3>🧪 Test Results</h3>
+        <div id="output" style="background: #f8f9fa; padding: 15px; border-radius: 4px; font-family: monospace; white-space: pre-wrap; min-height: 100px;"></div>
+    </div>
+
+    <script>
+        const baseUrl = 'http://1.231.118.217:20101';
+
+        async function testAPI(method, endpoint, data = null) {
+            const output = document.getElementById('output');
+            output.textContent = 'Testing...\n';
+
+            try {
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                };
+
+                if (data) {
+                    options.body = JSON.stringify(data);
+                }
+
+                const response = await fetch(baseUrl + endpoint, options);
+                const result = await response.json();
+
+                output.textContent = `${method} ${endpoint}\n` +
+                    `Status: ${response.status}\n` +
+                    `Response:\n${JSON.stringify(result, null, 2)}`;
+            } catch (error) {
+                output.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        function testCreatePlatform() {
+            const data = {
+                name: "test-platform-" + Date.now(),
+                description: "Test platform created from docs",
+                githubUser: "testuser"
+            };
+            testAPI('POST', '/api/platforms', data);
+        }
+
+        function testCreateProject() {
+            const data = {
+                name: "test-project-" + Date.now(),
+                platformId: "test-platform",
+                description: "Test project created from docs",
+                githubUser: "testuser"
+            };
+            testAPI('POST', '/api/projects', data);
+        }
+    </script>
+</body>
+</html>

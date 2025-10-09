@@ -1,0 +1,15 @@
+# build
+dist/
+node_modules/
+
+# data
+data/
+
+# platforms
+platforms/
+
+# private
+.env
+.env.*
+!.env.sample
+_backups/
