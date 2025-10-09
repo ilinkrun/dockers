@@ -6,7 +6,7 @@ node_modules/
 data/
 
 # platforms
-platforms/
+/platforms/
 
 # private
 .env

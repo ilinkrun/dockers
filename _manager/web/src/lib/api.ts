@@ -225,7 +225,7 @@ class ApiClient {
     });
   }
 
-  async createProjectScript(data: { platformId: string; name: string; githubUser: string; description?: string }): Promise<{ stdout: string; stderr: string; message: string }> {
+  async createProjectScript(data: { platformId: string; platformName: string; name: string; githubUser: string; description?: string }): Promise<{ stdout: string; stderr: string; message: string }> {
     return this.request<{ stdout: string; stderr: string; message: string }>('/api/scripts/create-project', {
       method: 'POST',
       body: JSON.stringify(data),

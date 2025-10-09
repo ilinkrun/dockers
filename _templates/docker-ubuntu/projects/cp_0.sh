@@ -24,7 +24,6 @@ MY_ROOT_PATH="${MY_ROOT_PATH:-/var/services/homes/jungsam/dockers}"
 # Scripts directory
 SCRIPTS_DIR="$MY_ROOT_PATH/_manager/scripts"
 CREATE_DB_SCRIPT="$SCRIPTS_DIR/create-project-db.js"
-UPDATE_REPO_SCRIPT="$SCRIPTS_DIR/update-repositories.js"
 
 # Default values
 TARGET_LOCATION="./"
@@ -33,7 +32,6 @@ PLATFORM_NAME=""
 PROJECT_NAME=""
 GITHUB_USER=""
 PROJECT_DESCRIPTION=""
-GIT_ENABLED="true"
 
 # 로그 함수
 log_info() {
@@ -70,7 +68,6 @@ show_usage() {
     echo "  -d  Project description (default: <project-name>)"
     echo "  -l  Target location (default: ./)"
     echo "  -t  Template directory (default: $MY_ROOT_PATH/_templates/ubuntu-project)"
-    echo "  -g  Initialize Git repository (true|false, default: true)"
     echo "  -h  Show this help message"
     echo ""
     echo "Examples:"
@@ -79,7 +76,7 @@ show_usage() {
 }
 
 # Parse command line arguments
-while getopts "p:n:u:d:l:t:g:h" opt; do
+while getopts "p:n:u:d:l:t:h" opt; do
     case $opt in
         p)
             PLATFORM_NAME="$OPTARG"
@@ -99,9 +96,6 @@ while getopts "p:n:u:d:l:t:g:h" opt; do
         t)
             TEMPLATE_DIRECTORY="$OPTARG"
             ;;
-        g)
-            GIT_ENABLED="$OPTARG"
-            ;;
         h)
             show_usage
             exit 0
@@ -117,12 +111,6 @@ while getopts "p:n:u:d:l:t:g:h" opt; do
             ;;
     esac
 done
-
-GIT_ENABLED=$(echo "$GIT_ENABLED" | tr "[:upper:]" "[:lower:]")
-if [ "$GIT_ENABLED" != "true" ] && [ "$GIT_ENABLED" != "false" ]; then
-    log_error "Invalid value for -g. Use true or false."
-    exit 1
-fi
 
 # Validate required arguments
 if [ -z "$PLATFORM_NAME" ]; then
@@ -431,111 +419,6 @@ EOF
     log_success ".gitignore file created"
 }
 
-update_repository_records() {
-    local mode="$1"
-    shift
-
-    if [ ! -f "$UPDATE_REPO_SCRIPT" ]; then
-        log_warning "Repositories update script not found: $UPDATE_REPO_SCRIPT"
-        return
-    fi
-
-    node "$UPDATE_REPO_SCRIPT" "$mode" "$@"
-}
-
-update_projects_json() {
-    local project_name="$1"
-    local platform_name="$2"
-    local description="$3"
-    local github_user="$4"
-    local status="$5"
-
-    local projects_file="$MY_ROOT_PATH/_manager/data/projects.json"
-
-    if [ ! -f "$projects_file" ]; then
-        log_warning "Projects data file not found: $projects_file"
-        return
-    fi
-
-    if [ ! -f "$SCRIPTS_DIR/port-allocator.js" ]; then
-        log_warning "Port allocator script not found: $SCRIPTS_DIR/port-allocator.js"
-        return
-    fi
-
-    local project_sn
-    project_sn=$(node "$SCRIPTS_DIR/port-allocator.js" next-project "$projects_file" "$platform_name" 2>/dev/null | tr -d $'\r\n')
-    if [ -z "$project_sn" ]; then
-        project_sn=0
-    fi
-
-    local timestamp
-    timestamp=$(date -Iseconds --utc)
-
-    node <<'NODE' "$projects_file" "$project_name" "$platform_name" "$description" "$github_user" "$status" "$timestamp" "$project_sn"
-const fs = require('fs');
-
-const [
-  projectsFile,
-  projectName,
-  platformId,
-  description,
-  githubUser,
-  status,
-  timestamp,
-  projectSn,
-] = process.argv.slice(2);
-
-let data = {
-  metadata: {
-    version: '1.0.0',
-    lastUpdated: timestamp,
-    totalProjects: 0,
-  },
-  projects: {},
-};
-
-if (fs.existsSync(projectsFile)) {
-  try {
-    data = JSON.parse(fs.readFileSync(projectsFile, 'utf-8'));
-  } catch (error) {
-    console.error('Failed to parse projects.json:', error.message);
-    process.exit(1);
-  }
-}
-
-if (!data.metadata) {
-  data.metadata = {
-    version: '1.0.0',
-    lastUpdated: timestamp,
-    totalProjects: 0,
-  };
-}
-
-if (!data.projects) {
-  data.projects = {};
-}
-
-const snValue = Number(projectSn);
-
-data.projects[projectName] = {
-  id: projectName,
-  sn: Number.isNaN(snValue) ? 0 : snValue,
-  name: projectName,
-  platformId,
-  description,
-  githubUser,
-  createdAt: timestamp,
-  updatedAt: timestamp,
-  status,
-};
-
-data.metadata.lastUpdated = timestamp;
-data.metadata.totalProjects = Object.keys(data.projects).length;
-
-fs.writeFileSync(projectsFile, JSON.stringify(data, null, 2));
-NODE
-}
-
 # Validate project name
 validate_project_name "$PROJECT_NAME"
 
@@ -565,24 +448,14 @@ substitute_template_variables "$PROJECT_NAME" "$TARGET_LOCATION"
 create_gitignore "$PROJECT_NAME" "$TARGET_LOCATION"
 
 # Git 저장소 생성 (xgit 사용)
-REPO_LOCAL_PATH="platforms/$PLATFORM_NAME/projects/$PROJECT_NAME"
-
 log_info "Initializing Git repository..."
-if [ "$GIT_ENABLED" = "true" ]; then
-    if command -v xgit &> /dev/null; then
-        cd "$TARGET_LOCATION/$PROJECT_NAME"
-        xgit -e make -u "$GITHUB_USER" -n "$PROJECT_NAME" -d "$PROJECT_DESCRIPTION" || log_warning "Git repository initialization failed (continuing)"
-        cd - > /dev/null
-    else
-        log_warning "xgit command not found. Please initialize Git repository manually."
-    fi
-    update_repository_records add-github "$PROJECT_NAME" project "$GITHUB_USER" "$PROJECT_DESCRIPTION" "$REPO_LOCAL_PATH"
+if command -v xgit &> /dev/null; then
+    cd "$TARGET_LOCATION/$PROJECT_NAME"
+    xgit -e make -u "$GITHUB_USER" -n "$PROJECT_NAME" -d "$PROJECT_DESCRIPTION" || log_warning "Git repository initialization failed (continuing)"
+    cd - > /dev/null
 else
-    log_info "Skipping Git repository initialization (-g=false)"
-    update_repository_records add-nogit "$PROJECT_NAME" project "$PROJECT_DESCRIPTION" "$REPO_LOCAL_PATH"
+    log_warning "xgit command not found. Please initialize Git repository manually."
 fi
-
-update_projects_json "$PROJECT_NAME" "$PLATFORM_NAME" "$PROJECT_DESCRIPTION" "$GITHUB_USER" "development"
 
 echo ""
 log_success "=========================================="

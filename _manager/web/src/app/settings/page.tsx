@@ -1,13 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { apiClient, DatabaseConfig, GitUserDetailed, ServerTemplate } from '@/lib/api';
 import DatabaseModal, { DatabaseFormData } from '@/components/DatabaseModal';
 import GitUserModal, { GitUserFormData } from '@/components/GitUserModal';
 import ServerTemplateModal from '@/components/ServerTemplateModal';
 
+const tabParamMap: Record<string, 'envs' | 'databases' | 'gitusers' | 'servers'> = {
+  envs: 'envs',
+  databases: 'databases',
+  githubs: 'gitusers',
+  templates: 'servers',
+};
+
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<'databases' | 'gitusers' | 'servers'>('databases');
+  const [activeTab, setActiveTab] = useState<'envs' | 'databases' | 'gitusers' | 'servers'>('databases');
 
   // Database state
   const [mysqlDatabases, setMysqlDatabases] = useState<DatabaseConfig[]>([]);
@@ -32,12 +40,28 @@ export default function SettingsPage() {
 
   const [isLoading, setIsLoading] = useState(false);
 
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (!tabParam) {
+      return;
+    }
+
+    const mapped = tabParamMap[tabParam];
+    if (mapped && mapped !== activeTab) {
+      setActiveTab(mapped);
+    }
+  }, [searchParams, activeTab]);
+
   // Load databases
   useEffect(() => {
     if (activeTab === 'databases') {
       loadDatabases();
     } else if (activeTab === 'gitusers') {
       loadGitUsers();
+    } else if (activeTab === 'envs') {
+      setIsLoading(false);
     } else if (activeTab === 'servers') {
       loadServerTemplates();
     }
@@ -225,16 +249,26 @@ export default function SettingsPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
           <p className="mt-2 text-sm text-gray-600">
-            Manage databases, Git users, and server templates
+            Manage environment variables, databases, GitHub accounts, and server templates
           </p>
         </div>
 
         {/* Tabs */}
         <div className="border-b border-gray-200 mb-6">
-          <nav className="-mb-px flex space-x-8">
+          <nav className="-mb-px flex space-x-8 overflow-x-auto">
+            <button
+              onClick={() => setActiveTab('envs')}
+              className={`$
+                activeTab === 'envs'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+            >
+              Envs
+            </button>
             <button
               onClick={() => setActiveTab('databases')}
-              className={`${
+              className={`$
                 activeTab === 'databases'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -244,29 +278,42 @@ export default function SettingsPage() {
             </button>
             <button
               onClick={() => setActiveTab('gitusers')}
-              className={`${
+              className={`$
                 activeTab === 'gitusers'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
             >
-              Git Users
+              Githubs
             </button>
             <button
               onClick={() => setActiveTab('servers')}
-              className={`${
+              className={`$
                 activeTab === 'servers'
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
             >
-              Server Templates
+              Templates
             </button>
           </nav>
+
         </div>
 
         {/* Tab Content */}
         <div className="bg-white rounded-lg shadow p-6">
+          {activeTab === 'envs' && (
+            <div>
+              <div className="rounded-lg border border-dashed border-gray-200 bg-gray-50 p-8 text-center">
+                <h2 className="text-xl font-semibold text-gray-900">Environment Management</h2>
+                <p className="mt-2 text-sm text-gray-600">
+                  Environment variable management is coming soon. Continue managing synced .env files under
+                  <span className="mx-1 rounded bg-gray-200 px-1.5 py-0.5 font-mono text-xs text-gray-700">_settings/</span>
+                  as part of the provisioning workflow.
+                </p>
+              </div>
+            </div>
+          )}
           {activeTab === 'databases' && (
             <div>
               <div className="flex justify-between items-center mb-6">

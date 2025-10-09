@@ -1,9 +1,12 @@
 import express from "express";
 import { exec } from "child_process";
 import { promisify } from "util";
+import path from "path";
+import { promises as fs } from "fs";
 
 const router = express.Router();
 const execAsync = promisify(exec);
+const DOCKERS_ROOT = process.env.MY_ROOT_PATH || "/var/services/homes/jungsam/dockers";
 
 /**
  * @swagger
@@ -97,6 +100,8 @@ router.post("/create-platform", async (req, res) => {
  *             properties:
  *               platformId:
  *                 type: string
+ *               platformName:
+ *                 type: string
  *               name:
  *                 type: string
  *               githubUser:
@@ -109,12 +114,12 @@ router.post("/create-platform", async (req, res) => {
  */
 router.post("/create-project", async (req, res) => {
   try {
-    const { platformId, name, githubUser, description } = req.body;
+    const { platformId, platformName, name, githubUser, description } = req.body;
 
-    if (!platformId || !name || !githubUser) {
+    if (!platformId || !platformName || !name || !githubUser) {
       return res.status(400).json({
         success: false,
-        error: "platformId, name, and githubUser are required",
+        error: "platformId, platformName, name, and githubUser are required",
       });
     }
 
@@ -122,7 +127,29 @@ router.post("/create-project", async (req, res) => {
     const descArg = description
       ? `-d "${description.replace(/"/g, '\\"')}"`
       : "";
-    const command = `cd /var/services/homes/jungsam/dockers/${platformId}/projects && ./cp.sh -n ${name} -u ${githubUser} ${descArg}`;
+    if (typeof platformId !== "string" || platformId.includes("..") || platformId.includes("/")) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid platformId",
+      });
+    }
+
+    if (typeof platformName !== "string" || platformName.includes("..") || platformName.includes("/")) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid platformName",
+      });
+    }
+
+    const projectsPath = path.join(
+      DOCKERS_ROOT,
+      "platforms",
+      platformId,
+      "projects"
+    );
+
+    await fs.mkdir(projectsPath, { recursive: true });
+    const command = `cd "${projectsPath}" && ./cp.sh -p "${platformName}" -n "${name}" -u "${githubUser}" ${descArg}`;
 
     console.log("Executing command:", command);
 
@@ -269,6 +296,8 @@ router.post("/delete-platform", async (req, res) => {
  *             properties:
  *               platformId:
  *                 type: string
+ *               platformName:
+ *                 type: string
  *               name:
  *                 type: string
  *               githubUser:
@@ -288,8 +317,21 @@ router.post("/delete-project", async (req, res) => {
       });
     }
 
+    if (typeof platformId !== "string" || platformId.includes("..") || platformId.includes("/")) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid platformId",
+      });
+    }
+
+    const projectsPath = path.join(
+      DOCKERS_ROOT,
+      "platforms",
+      platformId,
+      "projects"
+    );
     // Build command - execute from platform's projects directory
-    const command = `cd /var/services/homes/jungsam/dockers/${platformId}/projects && xgit -e remove -n ${name} -u ${githubUser}`;
+    const command = `cd "${projectsPath}" && xgit -e remove -n ${name} -u ${githubUser}`;
 
     console.log("Executing command:", command);
 

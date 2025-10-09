@@ -5,8 +5,16 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { apiClient, Project, Platform } from '@/lib/api';
 
-export default function ProjectDetailPage() {
-  const params = useParams();
+type RouteParams = {
+  id: string;
+  projectId: string;
+};
+
+export default function PlatformProjectDetailPage() {
+  const params = useParams<RouteParams>();
+  const platformId = params.id;
+  const projectId = params.projectId;
+
   const [project, setProject] = useState<Project | null>(null);
   const [platform, setPlatform] = useState<Platform | null>(null);
   const [loading, setLoading] = useState(true);
@@ -15,11 +23,11 @@ export default function ProjectDetailPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const id = params.id as string;
-        const projectData = await apiClient.getProject(id);
+        const [projectData, platformData] = await Promise.all([
+          apiClient.getProject(projectId),
+          apiClient.getPlatform(platformId),
+        ]);
         setProject(projectData);
-
-        const platformData = await apiClient.getPlatform(projectData.platformId);
         setPlatform(platformData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load project');
@@ -28,8 +36,10 @@ export default function ProjectDetailPage() {
       }
     };
 
-    fetchData();
-  }, [params.id]);
+    if (platformId && projectId) {
+      void fetchData();
+    }
+  }, [platformId, projectId]);
 
   if (loading) {
     return (
@@ -47,8 +57,8 @@ export default function ProjectDetailPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <p className="text-red-800">{error || 'Project not found'}</p>
-          <Link href="/projects" className="text-blue-600 hover:text-blue-500 mt-2 inline-block">
-            ← Back to Projects
+          <Link href={`/platforms?platformId=${platformId}`} className="text-blue-600 hover:text-blue-500 mt-2 inline-block">
+            ← Back to Platform
           </Link>
         </div>
       </div>
@@ -57,9 +67,15 @@ export default function ProjectDetailPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-6">
-        <Link href="/projects" className="text-blue-600 hover:text-blue-500">
-          ← Back to Projects
+      <div className="mb-6 flex items-center justify-between">
+        <Link href={`/platforms?platformId=${platformId}`} className="text-blue-600 hover:text-blue-500">
+          ← Back to Platform
+        </Link>
+        <Link
+          href={`/platforms/${platformId}/projects/${projectId}/edit`}
+          className="text-sm font-medium text-blue-600 hover:text-blue-500"
+        >
+          Edit Project
         </Link>
       </div>
 
@@ -68,19 +84,19 @@ export default function ProjectDetailPage() {
           <div className="flex justify-between items-start">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">{project.name}</h1>
-              {project.description && (
-                <p className="mt-1 text-sm text-gray-500">{project.description}</p>
-              )}
+              {project.description && <p className="mt-1 text-sm text-gray-500">{project.description}</p>}
             </div>
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-              project.status === 'production'
-                ? 'bg-green-100 text-green-800'
-                : project.status === 'development'
-                ? 'bg-yellow-100 text-yellow-800'
-                : project.status === 'active'
-                ? 'bg-blue-100 text-blue-800'
-                : 'bg-gray-100 text-gray-800'
-            }`}>
+            <span
+              className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                project.status === 'production'
+                  ? 'bg-green-100 text-green-800'
+                  : project.status === 'development'
+                  ? 'bg-yellow-100 text-yellow-800'
+                  : project.status === 'active'
+                  ? 'bg-blue-100 text-blue-800'
+                  : 'bg-gray-100 text-gray-800'
+              }`}
+            >
               {project.status}
             </span>
           </div>
@@ -100,7 +116,7 @@ export default function ProjectDetailPage() {
                     {platform.name}
                   </Link>
                 ) : (
-                  project.platformId
+                  platformId
                 )}
               </dd>
             </div>
@@ -116,7 +132,6 @@ export default function ProjectDetailPage() {
         </div>
       </div>
 
-      {/* Ports Section */}
       <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-medium text-gray-900">Ports</h2>
@@ -143,7 +158,6 @@ export default function ProjectDetailPage() {
         </div>
       </div>
 
-      {/* Database Section */}
       <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-medium text-gray-900">Database</h2>
@@ -166,7 +180,6 @@ export default function ProjectDetailPage() {
         </div>
       </div>
 
-      {/* Environment Section */}
       <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-medium text-gray-900">Environment</h2>
@@ -185,7 +198,6 @@ export default function ProjectDetailPage() {
         </div>
       </div>
 
-      {/* Metadata Section */}
       <div className="bg-white shadow overflow-hidden sm:rounded-lg">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-medium text-gray-900">Metadata</h2>
