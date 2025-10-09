@@ -25,7 +25,7 @@ UPDATE_REPOSITORIES="$SCRIPTS_DIR/update-repositories.js"
 
 # Default values
 TARGET_LOCATION="$MY_ROOT_PATH/platforms"
-TEMPLATE_DIRECTORY="$MY_ROOT_PATH/_templates/docker-ubuntu"
+TEMPLATE_DIRECTORY="$MY_ROOT_PATH/_templates/docker/docker-ubuntu"
 PLATFORM_NAME=""
 GITHUB_USER=""
 PLATFORM_DESCRIPTION=""
@@ -215,7 +215,7 @@ while getopts "n:u:d:l:t:h" opt; do
             echo "  -u  GitHub username (required)"
             echo "  -d  Platform description (required)"
             echo "  -l  Target location (default: ./)"
-            echo "  -t  Template directory (default: $MY_ROOT_PATH/_templates/docker-ubuntu)"
+            echo "  -t  Template directory (default: $MY_ROOT_PATH/_templates/docker/docker-ubuntu)"
             echo "  -h  Show this help message"
             exit 0
             ;;

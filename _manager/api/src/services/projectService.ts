@@ -78,8 +78,26 @@ export class ProjectService {
     const dbName = generateDatabaseName(request.platformId, request.name);
     const dbUser = generateDatabaseUser(request.platformId, request.name);
     const dbPassword = generatePassword(24);
-    const dbType = platform.settings.database.defaultType;
-    const dbConfig = platform.settings.database[dbType];
+    const defaultDatabaseSettings = {
+      defaultType: 'postgresql' as 'mysql' | 'postgresql',
+      mysql: {
+        host: 'mysql-server',
+        port: 3306,
+        rootPassword: generatePassword(24)
+      },
+      postgresql: {
+        host: 'postgres-server',
+        port: 5432,
+        superPassword: generatePassword(24)
+      }
+    };
+
+    const databaseSettings = platform.settings?.database ?? defaultDatabaseSettings;
+    const dbType = databaseSettings.defaultType ?? 'postgresql';
+    const dbConfig =
+      dbType === 'mysql'
+        ? databaseSettings.mysql ?? defaultDatabaseSettings.mysql
+        : databaseSettings.postgresql ?? defaultDatabaseSettings.postgresql;
 
     // Generate other settings
     const volumes = generateProjectVolumePaths(request.platformId, request.name);

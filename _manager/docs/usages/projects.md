@@ -1,6 +1,6 @@
  /var/services/homes/jungsam/dockers/platforms/ubuntu-sam/projects/cp.sh 를 실행하면 아래와 같은 내용이 일괄적으로 실행되도록 되어 있나요?
 
-1. 템플릿(default: /var/services/homes/jungsam/dockers/_templates/ubuntu-project) 복사
+1. 템플릿(default: /var/services/homes/jungsam/dockers/_templates/docker/ubuntu-project) 복사
 2. 템플릿에서 복사된 파일들에서 변수값 치환
 3. 프로젝트에 대한 database 생성
 
@@ -17,7 +17,7 @@
 - <github-user-name> 은 입력이 없을 경우 ./cu.sh에서 사용한 값을 그대로 사용하고,
 - <platform-description> 은 입력이 없을 경우 <project-name>
 - <target location> 은 입력이 없을 경우 './'
-- <template directory> 은 입력이 없을 경우 '/var/services/homes/jungsam/dockers/_templates/ubuntu-project'
+- <template directory> 은 입력이 없을 경우 '/var/services/homes/jungsam/dockers/_templates/docker/ubuntu-project'
 입니다.
 
 
@@ -44,7 +44,7 @@
  - syntax
   ./cp.sh -p <platform-name> -n <project-name> -u <github-user-name> -d "<project-description>" -l <target location> -t <template directory>
 
-- 템플릿 디폴트는 /var/services/homes/jungsam/dockers/_templates/ubuntu-project 입니다.
+- 템플릿 디폴트는 /var/services/homes/jungsam/dockers/_templates/docker/ubuntu-project 입니다.
 - DB 접속 옵션은 현재 프로젝트의 부모 플랫폼의 환경설정 파일(예: /var/services/homes/jungsam/dockers/platforms/ubuntu-sam/.env) 에 있는 아래의 내용을 참고합니다.
 
 """
@@ -63,19 +63,19 @@ POSTGRES_PORT=5433
 
 - /var/services/homes/jungsam/dockers/_scripts/create-project-db.js 파일로 데이터베이스 이름을 생성하고, mysql, postgresql 에 데이터베이스를 생성합니다.
 
-- /var/services/homes/jungsam/dockers/_templates/ubuntu-project/.env 에서 복사된 .env 파일에 있는 변수값들은 치환해줍니다.
+- /var/services/homes/jungsam/dockers/_templates/docker/ubuntu-project/.env 에서 복사된 .env 파일에 있는 변수값들은 치환해줍니다.
   - ${MYSQL_HOST}, .... : 플랫폼 환경변수의 값으로 치환
   - PROJECT_DB_NAME: 생성된 데이터베이스 이름
   - ${PORT_1} ~ ${PORT_19}
     - PORT_1 = BASE_PORT + 1 ,.... PORT_19 = BASE_PORT + 19
     - BASE_PORT: /var/services/homes/jungsam/dockers/platforms/ubuntu-sam/.env 에 있는 PLATFORM_PORT_START 값
 
-/var/services/homes/jungsam/dockers/_templates/ubuntu-project/ 에서 복사된 .env 뿐 아니라, .env.dev, .env.prod 파일에 있는 변수값들도 치환해주세요
+/var/services/homes/jungsam/dockers/_templates/docker/ubuntu-project/ 에서 복사된 .env 뿐 아니라, .env.dev, .env.prod 파일에 있는 변수값들도 치환해주세요
 
 
 ===
 
- 수정된 /var/services/homes/jungsam/dockers/platforms/ubuntu-sam/projects/cp.sh 파일의 템플릿인  /var/services/homes/jungsam/dockers/_templates/docker-ubuntu/projects/cp.sh 파일에 변경사항들을 반영해주세요.
+ 수정된 /var/services/homes/jungsam/dockers/platforms/ubuntu-sam/projects/cp.sh 파일의 템플릿인  /var/services/homes/jungsam/dockers/_templates/docker/docker-ubuntu/projects/cp.sh 파일에 변경사항들을 반영해주세요.
 
  ===
 
@@ -161,7 +161,7 @@ import { MYSQL_HOST } from '$env/static/private';
 
 ===
 
- /var/services/homes/jungsam/dockers/_templates/docker-ubuntu/projects/cp.sh 파일은 xgit 명령에 대한 부분은 모두 삭제
+ /var/services/homes/jungsam/dockers/_templates/docker/docker-ubuntu/projects/cp.sh 파일은 xgit 명령에 대한 부분은 모두 삭제
 
 ===
 

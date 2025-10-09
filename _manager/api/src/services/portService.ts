@@ -1,12 +1,26 @@
 import { execSync } from "child_process";
 import * as path from "path";
 
-const PORT_ALLOCATOR =
-  "/var/services/homes/jungsam/dockers/_scripts/port-allocator.js";
-const PLATFORMS_JSON =
-  "/var/services/homes/jungsam/dockers/_manager/data/platforms.json";
-const PROJECTS_JSON =
-  "/var/services/homes/jungsam/dockers/_manager/data/projects.json";
+const DOCKERS_ROOT =
+  process.env.MY_ROOT_PATH || "/var/services/homes/jungsam/dockers";
+const PORT_ALLOCATOR = path.join(
+  DOCKERS_ROOT,
+  "_manager",
+  "scripts",
+  "port-allocator.js"
+);
+const PLATFORMS_JSON = path.join(
+  DOCKERS_ROOT,
+  "_manager",
+  "data",
+  "platforms.json"
+);
+const PROJECTS_JSON = path.join(
+  DOCKERS_ROOT,
+  "_manager",
+  "data",
+  "projects.json"
+);
 
 export interface PlatformPortInfo {
   sn: number;

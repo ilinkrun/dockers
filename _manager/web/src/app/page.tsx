@@ -203,27 +203,30 @@ export default function Dashboard() {
           <div className="p-6">
             {projects.length > 0 ? (
               <div className="space-y-4">
-                {projects.slice(0, 5).map((project) => (
-                  <div key={project.id} className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">
-                        {project.name}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        Platform: {project.platformId} • Port: {project.ports.backend}
-                      </p>
+                {projects
+                  .slice(0, 5)
+                  .filter(Boolean)
+                  .map((project, index) => (
+                    <div key={project?.id ?? `project-${index}`} className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {project?.name ?? 'Untitled Project'}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Platform: {project?.platformId ?? 'Unknown'} • Port: {project?.ports?.backend ?? 'N/A'}
+                        </p>
+                      </div>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        project?.status === 'development'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : project?.status === 'production'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {project?.status ?? 'Unknown'}
+                      </span>
                     </div>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      project.status === 'development'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : project.status === 'production'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {project.status}
-                    </span>
-                  </div>
-                ))}
+                  ))}
               </div>
             ) : (
               <div className="text-center text-gray-500">

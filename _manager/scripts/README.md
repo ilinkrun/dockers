@@ -288,7 +288,7 @@ If you need to manually set ports, you can still do so, but ensure they don't co
 
 1. **`/var/services/homes/jungsam/dockers/_scripts/port-allocator.js`** - Main utility script
 2. **`/var/services/homes/jungsam/dockers/cu.sh`** - Platform creation script (integrated)
-3. **`/var/services/homes/jungsam/dockers/_templates/docker-ubuntu/.env.sample`** - Template updated with port documentation
+3. **`/var/services/homes/jungsam/dockers/_templates/docker/docker-ubuntu/.env.sample`** - Template updated with port documentation
 
 ## Best Practices
 

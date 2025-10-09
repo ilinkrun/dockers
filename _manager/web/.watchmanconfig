@@ -4,6 +4,6 @@
     ".next",
     ".git",
     "../../**/projects/**",
-    "../../_templates/**"
+    "../../_templates/docker/docker/**"
   ]
 }

@@ -215,7 +215,7 @@ export default function ProjectModal({ isOpen, onClose, onSave, project, platfor
                           <label className="block text-xs text-gray-600 mb-1">Backend</label>
                           <input
                             type="number"
-                            value={project.ports.backend}
+                            value={project?.ports?.backend ?? ''}
                             disabled
                             className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 text-sm"
                           />
@@ -224,7 +224,7 @@ export default function ProjectModal({ isOpen, onClose, onSave, project, platfor
                           <label className="block text-xs text-gray-600 mb-1">GraphQL</label>
                           <input
                             type="number"
-                            value={project.ports.graphql}
+                            value={project?.ports?.graphql ?? ''}
                             disabled
                             className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 text-sm"
                           />
@@ -233,7 +233,7 @@ export default function ProjectModal({ isOpen, onClose, onSave, project, platfor
                           <label className="block text-xs text-gray-600 mb-1">Frontend (Next.js)</label>
                           <input
                             type="number"
-                            value={project.ports.frontendNextjs}
+                            value={project?.ports?.frontendNextjs ?? ''}
                             disabled
                             className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 text-sm"
                           />
@@ -242,17 +242,17 @@ export default function ProjectModal({ isOpen, onClose, onSave, project, platfor
                           <label className="block text-xs text-gray-600 mb-1">Frontend (SvelteKit)</label>
                           <input
                             type="number"
-                            value={project.ports.frontendSveltekit}
+                            value={project?.ports?.frontendSveltekit ?? ''}
                             disabled
                             className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 text-sm"
                           />
                         </div>
                       </div>
-                      {project.ports.reserved && project.ports.reserved.length > 0 && (
+                      {project?.ports?.reserved && project?.ports?.reserved.length > 0 && (
                         <div className="mt-2">
                           <label className="block text-xs text-gray-600 mb-1">Reserved Ports</label>
                           <div className="text-sm text-gray-700 bg-white p-2 rounded border border-gray-300">
-                            {project.ports.reserved.join(', ')}
+                            {project?.ports?.reserved?.join(', ')}
                           </div>
                         </div>
                       )}
@@ -266,7 +266,7 @@ export default function ProjectModal({ isOpen, onClose, onSave, project, platfor
                             <label className="block text-xs text-gray-600 mb-1">Type</label>
                             <input
                               type="text"
-                              value={project.database.type}
+                              value={project?.database?.type ?? ''}
                               disabled
                               className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 text-sm"
                             />
@@ -275,7 +275,7 @@ export default function ProjectModal({ isOpen, onClose, onSave, project, platfor
                             <label className="block text-xs text-gray-600 mb-1">Host</label>
                             <input
                               type="text"
-                              value={project.database.host}
+                              value={project?.database?.host ?? ''}
                               disabled
                               className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 text-sm"
                             />
@@ -285,7 +285,7 @@ export default function ProjectModal({ isOpen, onClose, onSave, project, platfor
                           <label className="block text-xs text-gray-600 mb-1">Database Name</label>
                           <input
                             type="text"
-                            value={project.database.name}
+                            value={project?.database?.name ?? ''}
                             disabled
                             className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 text-sm"
                           />
@@ -295,7 +295,7 @@ export default function ProjectModal({ isOpen, onClose, onSave, project, platfor
                             <label className="block text-xs text-gray-600 mb-1">User</label>
                             <input
                               type="text"
-                              value={project.database.user}
+                              value={project?.database?.user ?? ''}
                               disabled
                               className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 text-sm"
                             />
@@ -304,7 +304,7 @@ export default function ProjectModal({ isOpen, onClose, onSave, project, platfor
                             <label className="block text-xs text-gray-600 mb-1">Auto Create</label>
                             <input
                               type="text"
-                              value={project.database.autoCreate ? 'Yes' : 'No'}
+                              value={project?.database?.autoCreate ? 'Yes' : 'No'}
                               disabled
                               className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 text-sm"
                             />
@@ -320,7 +320,7 @@ export default function ProjectModal({ isOpen, onClose, onSave, project, platfor
                           <label className="block text-xs text-gray-600 mb-1">Node Environment</label>
                           <input
                             type="text"
-                            value={project.environment.nodeEnv}
+                            value={project?.environment?.nodeEnv ?? ''}
                             disabled
                             className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 text-sm"
                           />
@@ -329,7 +329,7 @@ export default function ProjectModal({ isOpen, onClose, onSave, project, platfor
                           <label className="block text-xs text-gray-600 mb-1">CORS Origin</label>
                           <input
                             type="text"
-                            value={project.environment.corsOrigin}
+                            value={project?.environment?.corsOrigin ?? ''}
                             disabled
                             className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 text-sm"
                           />
@@ -344,7 +344,7 @@ export default function ProjectModal({ isOpen, onClose, onSave, project, platfor
                           <label className="block text-xs text-gray-600 mb-1">Backend</label>
                           <input
                             type="text"
-                            value={project.docker.imageBackend}
+                            value={project?.docker?.imageBackend ?? ''}
                             disabled
                             className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 text-sm"
                           />
@@ -353,7 +353,7 @@ export default function ProjectModal({ isOpen, onClose, onSave, project, platfor
                           <label className="block text-xs text-gray-600 mb-1">Frontend (Next.js)</label>
                           <input
                             type="text"
-                            value={project.docker.imageFrontendNextjs}
+                            value={project?.docker?.imageFrontendNextjs ?? ''}
                             disabled
                             className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 text-sm"
                           />
@@ -368,7 +368,7 @@ export default function ProjectModal({ isOpen, onClose, onSave, project, platfor
                           <label className="block text-xs text-gray-600 mb-1">Data Path</label>
                           <input
                             type="text"
-                            value={project.volumes.dataPath}
+                            value={project?.volumes?.dataPath ?? ''}
                             disabled
                             className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 text-sm"
                           />
@@ -377,7 +377,7 @@ export default function ProjectModal({ isOpen, onClose, onSave, project, platfor
                           <label className="block text-xs text-gray-600 mb-1">Logs Path</label>
                           <input
                             type="text"
-                            value={project.volumes.logsPath}
+                            value={project?.volumes?.logsPath ?? ''}
                             disabled
                             className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 text-sm"
                           />
@@ -386,7 +386,7 @@ export default function ProjectModal({ isOpen, onClose, onSave, project, platfor
                           <label className="block text-xs text-gray-600 mb-1">Uploads Path</label>
                           <input
                             type="text"
-                            value={project.volumes.uploadsPath}
+                            value={project?.volumes?.uploadsPath ?? ''}
                             disabled
                             className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 text-sm"
                           />

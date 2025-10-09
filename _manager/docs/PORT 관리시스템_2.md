@@ -22,7 +22,7 @@
 
 ## ✅ 3. .env.sample 템플릿 업데이트
 
-**파일**: `_templates/docker-ubuntu/.env.sample`
+**파일**: `_templates/docker/docker-ubuntu/.env.sample`
 
 ### 추가된 내용
 - Port 할당 시스템 설명

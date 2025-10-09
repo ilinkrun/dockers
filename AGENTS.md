@@ -3,7 +3,7 @@
 ## Project Structure & Module Organization
 - `_manager/api` runs the Express + TypeScript manager; keep routes/services/types separated under `src/*` and Swagger docs in `src/swagger`.
 - `_manager/web` hosts the Next.js 15/Tailwind UI; colocate features in `src/app` and store static assets in `public/`.
-- `_templates/` feeds the provisioning scripts; adjust the placeholder tokens instead of inserting hard-coded paths or ports.
+- `_templates/docker/` feeds the provisioning scripts; adjust the placeholder tokens instead of inserting hard-coded paths or ports.
 - `_scripts/port-allocator.js` with `_manager/data/*.json` tracks platform and project serials; generated platforms live in `platforms/`, while `_settings/` stores gitignored env files resolved from `.env` (notably `MY_ROOT_PATH` and manager ports).
 
 ## Build, Test, and Development Commands
@@ -29,4 +29,4 @@
 ## Provisioning & Configuration Tips
 - Keep `.env` authoritative; scripts rely on `MY_ROOT_PATH` and `BASE_PLATFORMS_PORT` for substitutions.
 - Create platforms with `./cu.sh` from the repo root and projects with `./cp.sh` inside `platforms/<name>/projects` so port allocation and metadata stay in sync.
-- After touching `_templates/`, dry-run the provisioning flow in a disposable platform and delete the generated artifacts before committing.
+- After touching `_templates/docker/`, dry-run the provisioning flow in a disposable platform and delete the generated artifacts before committing.

@@ -42,26 +42,26 @@ npm run dev
 
 ### api
 
-> http://1.231.118.217:3001/doc/
+> http://1.231.118.217:20101/doc/
 
 ```sh
 # 개발 모드 (자동 재시작)
-cd /var/services/homes/jungsam/dockers/_manager/api && npm run dev
+cd /var/services/homes/jungsam/dockers/_manager && npm run dev:api
 
 # 프로덕션 모드
-cd /var/services/homes/jungsam/dockers/_manager/api && npm run build && npm run start
+cd /var/services/homes/jungsam/dockers/_manager && npm run build && npm run start:api
 ```
 
 ### web
 
-> http://1.231.118.217:3000
+> http://1.231.118.217:20100
 
 ```sh
 # 개발 모드
-cd /var/services/homes/jungsam/dockers/_manager/web && npm run dev
+cd /var/services/homes/jungsam/dockers/_manager && npm run dev:web
 
 # 프로덕션 모드
-cd /var/services/homes/jungsam/dockers/_manager/web && npm run build && npm run start
+cd /var/services/homes/jungsam/dockers/_manager && npm run build && npm run start:web
 
 ```
 
@@ -229,3 +229,73 @@ rm -rf /var/services/homes/jungsam/dockers/platforms/[platform-name]
 cd /var/services/homes/jungsam/dockers && ./remove-platform.sh -n ubuntu-ilmac -r all
 ```
 
+===
+
+## docs
+- 개발
+  - github issue
+Code
+Issues
+Pull requests
+Actions
+Projects
+Wiki
+Security
+Insights
+Settings
+
+## 템플릿
+_templates
+  - ui
+    - shadcn
+      - page
+      - template
+      - component
+
+
+===
+
+### remove-project.sh
+
+/var/services/homes/jungsam/dockers/remove-platform.sh 파일을 참고하여 /var/services/homes/jungsam/dockers/remove-project.sh 를 만들어주세요.
+
+syntax: ./remove-project.sh -n [project-name](예:ubuntu-project-2) -r remote|local|all(default:remote)
+
+
+0. platform data
+- /var/services/homes/jungsam/dockers/_manager/data/repositories.json 에서 
+  - [github-user]: github[project-name][user]
+  - [local-path]: github[path][local]
+
+
+1. 저장소 삭제
+1-1. remote 저장소 삭제(-r 옵션: remote or all)
+xgit -e del -n [project-name] -u [github-user]
+
+1-2. local 저장소 삭제(-r 옵션: local or all)
+rm -rf /var/services/homes/jungsam/dockers/[local-path]
+
+
+2. data(json) 업데이트
+- 저장소 데이터 삭제: /var/services/homes/jungsam/dockers/_manager/data/repositories.json
+- project 데이터 삭제: /var/services/homes/jungsam/dockers/_manager/data/projects.json
+
+
+### 사용례
+
+```sh
+cd /var/services/homes/jungsam/dockers && ./remove-project.sh -n ubuntu-project-2 -r all
+```
+
+===
+
+### cp.sh
+
+
+```sh
+cd /var/services/homes/jungsam/dockers/platforms/ubuntu-ilmac/projects && ./cp.sh -p ubuntu-ilmac -n ubuntu-project-2 -u ilinkrun -d "ubuntu project 2"
+```
+
+`cd /var/services/homes/jungsam/dockers/platforms/ubuntu-ilmac/projects && ./cp.sh -p ubuntu-ilmac -n ubuntu-project-2 -u ilinkrun -d "ubuntu project 2"` 를 실행하였더니, 다른 기능들은 다 잘 되는데, /var/services/homes/jungsam/dockers/_manager/data/projects.json 에 프로젝트 정보가 추가되지 않아요.
+
+===

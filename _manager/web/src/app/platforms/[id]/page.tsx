@@ -56,6 +56,11 @@ export default function PlatformDetailPage() {
     );
   }
 
+  const mysqlHost = platform.settings?.database?.mysql?.host;
+  const mysqlPort = platform.settings?.database?.mysql?.port;
+  const postgresqlHost = platform.settings?.database?.postgresql?.host;
+  const postgresqlPort = platform.settings?.database?.postgresql?.port;
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-6">
@@ -97,7 +102,7 @@ export default function PlatformDetailPage() {
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">Base Port</dt>
-              <dd className="mt-1 text-sm text-gray-900">{platform.settings.basePort}</dd>
+              <dd className="mt-1 text-sm text-gray-900">{platform.settings?.basePort ?? 'N/A'}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">Project Count</dt>
@@ -105,22 +110,26 @@ export default function PlatformDetailPage() {
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">Network Subnet</dt>
-              <dd className="mt-1 text-sm text-gray-900 font-mono">{platform.settings.network.subnet}</dd>
+              <dd className="mt-1 text-sm text-gray-900 font-mono">{platform.settings?.network?.subnet ?? 'N/A'}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">Network Gateway</dt>
-              <dd className="mt-1 text-sm text-gray-900 font-mono">{platform.settings.network.gateway}</dd>
+              <dd className="mt-1 text-sm text-gray-900 font-mono">{platform.settings?.network?.gateway ?? 'N/A'}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">MySQL</dt>
               <dd className="mt-1 text-sm text-gray-900 font-mono">
-                {platform.settings.database.mysql.host}:{platform.settings.database.mysql.port}
+                {mysqlHost && mysqlPort
+                  ? `${mysqlHost}:${mysqlPort}`
+                  : 'N/A'}
               </dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">PostgreSQL</dt>
               <dd className="mt-1 text-sm text-gray-900 font-mono">
-                {platform.settings.database.postgresql.host}:{platform.settings.database.postgresql.port}
+                {postgresqlHost && postgresqlPort
+                  ? `${postgresqlHost}:${postgresqlPort}`
+                  : 'N/A'}
               </dd>
             </div>
             <div>
@@ -142,41 +151,49 @@ export default function PlatformDetailPage() {
         </div>
         {projects.length > 0 ? (
           <ul className="divide-y divide-gray-200">
-            {projects.map((project) => (
-              <li key={project.id}>
-                <Link href={`/platforms/${platform.id}/projects/${project.id}`} className="block px-6 py-4 hover:bg-gray-50">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-3">
-                        <h3 className="text-base font-medium text-gray-900 truncate">
-                          {project.name}
-                        </h3>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          project.status === 'production'
-                            ? 'bg-green-100 text-green-800'
-                            : project.status === 'development'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {project.status}
-                        </span>
+            {projects
+              .filter(Boolean)
+              .map((project, index) => {
+                if (!project?.id) {
+                  return null;
+                }
+
+                return (
+                  <li key={project.id}>
+                    <Link href={`/platforms/${platform.id}/projects/${project.id}`} className="block px-6 py-4 hover:bg-gray-50">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-3">
+                            <h3 className="text-base font-medium text-gray-900 truncate">
+                              {project?.name ?? 'Untitled Project'}
+                            </h3>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              project?.status === 'production'
+                                ? 'bg-green-100 text-green-800'
+                                : project?.status === 'development'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {project?.status ?? 'Unknown'}
+                            </span>
+                          </div>
+                          {project?.description && (
+                            <p className="mt-1 text-sm text-gray-500">{project?.description}</p>
+                          )}
+                          <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500">
+                            <span>Backend: {project?.ports?.backend ?? 'N/A'}</span>
+                            <span>GraphQL: {project?.ports?.graphql ?? 'N/A'}</span>
+                            <span>DB: {project?.database?.type ?? 'N/A'}</span>
+                          </div>
+                        </div>
+                        <div className="ml-4 flex-shrink-0">
+                          <span className="text-blue-600 hover:text-blue-500">View →</span>
+                        </div>
                       </div>
-                      {project.description && (
-                        <p className="mt-1 text-sm text-gray-500">{project.description}</p>
-                      )}
-                      <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500">
-                        <span>Backend: {project.ports.backend}</span>
-                        <span>GraphQL: {project.ports.graphql}</span>
-                        <span>DB: {project.database.type}</span>
-                      </div>
-                    </div>
-                    <div className="ml-4 flex-shrink-0">
-                      <span className="text-blue-600 hover:text-blue-500">View →</span>
-                    </div>
-                  </div>
-                </Link>
-              </li>
-            ))}
+                    </Link>
+                  </li>
+                );
+              })}
           </ul>
         ) : (
           <div className="px-6 py-12 text-center text-gray-500">

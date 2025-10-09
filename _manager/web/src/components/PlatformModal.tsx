@@ -43,15 +43,22 @@ export default function PlatformModal({ isOpen, onClose, onSave, platform, mode 
         setPostgresqlDatabases(databases.postgresqls);
 
         if (platform && mode === 'edit') {
+          const databaseSettings = platform.settings?.database;
           setFormData({
             name: platform.name,
             description: platform.description || '',
             githubUser: platform.githubUser,
             status: platform.status,
-            dbType: platform.settings.database.defaultType,
-            mysqlId: platform.settings.database.mysqlId || '',
-            postgresqlId: platform.settings.database.postgresqlId || ''
+            dbType: databaseSettings?.defaultType ?? 'postgresql',
+            mysqlId: databaseSettings?.mysqlId || '',
+            postgresqlId: databaseSettings?.postgresqlId || ''
           });
+          if (databaseSettings?.mysqlId) {
+            setSelectedMysqlDb(databases.mysqls.find(db => db.id === databaseSettings.mysqlId) ?? null);
+          }
+          if (databaseSettings?.postgresqlId) {
+            setSelectedPostgresqlDb(databases.postgresqls.find(db => db.id === databaseSettings.postgresqlId) ?? null);
+          }
         } else {
           const defaultPostgresqlId = databases.postgresqls[0]?.id || '';
           const defaultMysqlId = databases.mysqls[0]?.id || '';
@@ -326,7 +333,7 @@ export default function PlatformModal({ isOpen, onClose, onSave, platform, mode 
                         <label className="block text-sm font-medium text-gray-700 mb-1">Base Port</label>
                         <input
                           type="number"
-                          value={platform.settings.basePort}
+                          value={platform?.settings?.basePort ?? ''}
                           disabled
                           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700"
                         />
@@ -335,7 +342,7 @@ export default function PlatformModal({ isOpen, onClose, onSave, platform, mode 
                         <label className="block text-sm font-medium text-gray-700 mb-1">Port Increment</label>
                         <input
                           type="number"
-                          value={platform.settings.portIncrement}
+                          value={platform?.settings?.portIncrement ?? ''}
                           disabled
                           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700"
                         />
@@ -349,7 +356,7 @@ export default function PlatformModal({ isOpen, onClose, onSave, platform, mode 
                           <label className="block text-xs text-gray-600 mb-1">Subnet</label>
                           <input
                             type="text"
-                            value={platform.settings.network.subnet}
+                            value={platform?.settings?.network?.subnet ?? ''}
                             disabled
                             className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 text-sm"
                           />
@@ -358,7 +365,7 @@ export default function PlatformModal({ isOpen, onClose, onSave, platform, mode 
                           <label className="block text-xs text-gray-600 mb-1">Gateway</label>
                           <input
                             type="text"
-                            value={platform.settings.network.gateway}
+                            value={platform?.settings?.network?.gateway ?? ''}
                             disabled
                             className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 text-sm"
                           />
@@ -373,7 +380,7 @@ export default function PlatformModal({ isOpen, onClose, onSave, platform, mode 
                           <label className="block text-xs text-gray-600 mb-1">Default Type</label>
                           <input
                             type="text"
-                            value={platform.settings.database.defaultType}
+                            value={platform?.settings?.database?.defaultType ?? ''}
                             disabled
                             className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 text-sm"
                           />
@@ -383,7 +390,7 @@ export default function PlatformModal({ isOpen, onClose, onSave, platform, mode 
                             <label className="block text-xs text-gray-600 mb-1">MySQL Host</label>
                             <input
                               type="text"
-                              value={platform.settings.database.mysql.host}
+                              value={platform?.settings?.database?.mysql?.host ?? ''}
                               disabled
                               className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 text-sm"
                             />
@@ -392,7 +399,7 @@ export default function PlatformModal({ isOpen, onClose, onSave, platform, mode 
                             <label className="block text-xs text-gray-600 mb-1">PostgreSQL Host</label>
                             <input
                               type="text"
-                              value={platform.settings.database.postgresql.host}
+                              value={platform?.settings?.database?.postgresql?.host ?? ''}
                               disabled
                               className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 text-sm"
                             />
@@ -408,7 +415,7 @@ export default function PlatformModal({ isOpen, onClose, onSave, platform, mode 
                           <label className="block text-xs text-gray-600 mb-1">Data Path</label>
                           <input
                             type="text"
-                            value={platform.settings.volumes.dataPath}
+                            value={platform?.settings?.volumes?.dataPath ?? ''}
                             disabled
                             className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 text-sm"
                           />
@@ -417,7 +424,7 @@ export default function PlatformModal({ isOpen, onClose, onSave, platform, mode 
                           <label className="block text-xs text-gray-600 mb-1">Logs Path</label>
                           <input
                             type="text"
-                            value={platform.settings.volumes.logsPath}
+                            value={platform?.settings?.volumes?.logsPath ?? ''}
                             disabled
                             className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 text-sm"
                           />
@@ -426,7 +433,7 @@ export default function PlatformModal({ isOpen, onClose, onSave, platform, mode 
                           <label className="block text-xs text-gray-600 mb-1">Backups Path</label>
                           <input
                             type="text"
-                            value={platform.settings.volumes.backupsPath}
+                            value={platform?.settings?.volumes?.backupsPath ?? ''}
                             disabled
                             className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 text-sm"
                           />

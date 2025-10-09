@@ -293,8 +293,8 @@ export default function PlatformsPage() {
                         <div className="mt-2 flex items-center space-x-4 text-sm text-gray-500">
                           <span className="flex items-center">👤 {platform.githubUser}</span>
                           <span className="flex items-center">📦 {platform.projectCount} projects</span>
-                          <span className="flex items-center">🔌 Port: {platform.settings.basePort}</span>
-                          <span className="flex items-center">🌐 {platform.settings.network.subnet}</span>
+                          <span className="flex items-center">🔌 Port: {platform.settings?.basePort ?? 'N/A'}</span>
+                          <span className="flex items-center">🌐 {platform.settings?.network?.subnet ?? 'N/A'}</span>
                         </div>
                         <div className="mt-2 text-xs text-gray-400">
                           Created: {new Date(platform.createdAt).toLocaleString()}
@@ -360,61 +360,68 @@ export default function PlatformsPage() {
                           </div>
                         ) : projectState && projectState.data.length > 0 ? (
                           <ul className="space-y-3">
-                            {projectState.data.map((project) => (
-                              <li key={project.id} className="rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm">
-                                <div className="flex items-start justify-between">
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-3">
-                                      <h5 className="text-base font-medium text-gray-900 truncate">{project.name}</h5>
-                                      <span
-                                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                          project.status === 'production'
-                                            ? 'bg-green-100 text-green-800'
-                                            : project.status === 'development'
-                                            ? 'bg-yellow-100 text-yellow-800'
-                                            : project.status === 'active'
-                                            ? 'bg-blue-100 text-blue-800'
-                                            : 'bg-gray-100 text-gray-800'
-                                        }`}
+                            {(projectState?.data ?? [])
+                              .filter(Boolean)
+                              .map((project, index) => (
+                                <li
+                                  key={project?.id ?? `project-${index}`}
+                                  className="rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm"
+                                >
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-3">
+                                        <h5 className="text-base font-medium text-gray-900 truncate">
+                                          {project?.name ?? 'Untitled Project'}
+                                        </h5>
+                                        <span
+                                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                            project?.status === 'production'
+                                              ? 'bg-green-100 text-green-800'
+                                              : project?.status === 'development'
+                                              ? 'bg-yellow-100 text-yellow-800'
+                                              : project?.status === 'active'
+                                              ? 'bg-blue-100 text-blue-800'
+                                              : 'bg-gray-100 text-gray-800'
+                                          }`}
+                                        >
+                                          {project?.status ?? 'Unknown'}
+                                        </span>
+                                      </div>
+                                      {project?.description && (
+                                        <p className="mt-1 text-sm text-gray-500">{project?.description}</p>
+                                      )}
+                                      <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500 sm:grid-cols-3">
+                                        <span>👤 {project?.githubUser ?? 'Unknown'}</span>
+                                        <span>🔌 Backend: {project?.ports?.backend ?? 'N/A'}</span>
+                                        <span>🔌 GraphQL: {project?.ports?.graphql ?? 'N/A'}</span>
+                                        <span>🔌 Next.js: {project?.ports?.frontendNextjs ?? 'N/A'}</span>
+                                        <span>💾 DB: {project?.database?.type ?? 'N/A'}</span>
+                                        <span>🌍 {project?.environment?.nodeEnv ?? 'N/A'}</span>
+                                      </div>
+                                    </div>
+                                    <div className="ml-4 flex-shrink-0 flex gap-2">
+                                      <button
+                                        onClick={() => handleProjectView(platform, project)}
+                                        className="inline-flex items-center rounded-md border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
                                       >
-                                        {project.status}
-                                      </span>
-                                    </div>
-                                    {project.description && (
-                                      <p className="mt-1 text-sm text-gray-500">{project.description}</p>
-                                    )}
-                                    <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500 sm:grid-cols-3">
-                                      <span>👤 {project.githubUser}</span>
-                                      <span>🔌 Backend: {project.ports.backend}</span>
-                                      <span>🔌 GraphQL: {project.ports.graphql}</span>
-                                      <span>🔌 Next.js: {project.ports.frontendNextjs}</span>
-                                      <span>💾 DB: {project.database.type}</span>
-                                      <span>🌍 {project.environment.nodeEnv}</span>
+                                        View
+                                      </button>
+                                      <button
+                                        onClick={() => handleProjectEdit(platform, project)}
+                                        className="inline-flex items-center rounded-md border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        onClick={() => handleProjectDeleteClick(platform.id, project)}
+                                        className="inline-flex items-center rounded-md border border-red-300 px-2.5 py-1 text-xs font-medium text-red-700 hover:bg-red-50"
+                                      >
+                                        Delete
+                                      </button>
                                     </div>
                                   </div>
-                                  <div className="ml-4 flex-shrink-0 flex gap-2">
-                                    <button
-                                      onClick={() => handleProjectView(platform, project)}
-                                      className="inline-flex items-center rounded-md border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
-                                    >
-                                      View
-                                    </button>
-                                    <button
-                                      onClick={() => handleProjectEdit(platform, project)}
-                                      className="inline-flex items-center rounded-md border border-gray-300 px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50"
-                                    >
-                                      Edit
-                                    </button>
-                                    <button
-                                      onClick={() => handleProjectDeleteClick(platform.id, project)}
-                                      className="inline-flex items-center rounded-md border border-red-300 px-2.5 py-1 text-xs font-medium text-red-700 hover:bg-red-50"
-                                    >
-                                      Delete
-                                    </button>
-                                  </div>
-                                </div>
-                              </li>
-                            ))}
+                                </li>
+                              ))}
                           </ul>
                         ) : (
                           <div className="rounded-md border border-dashed border-gray-200 px-4 py-6 text-center text-sm text-gray-500">

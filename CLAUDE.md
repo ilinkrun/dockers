@@ -17,7 +17,7 @@ docker-platforms/
 │   └── web/              # Next.js frontend (port 10100)
 ├── _scripts/             # Automation scripts
 │   └── port-allocator.js # Port allocation utility
-├── _templates/           # Platform and project templates
+├── _templates/docker/           # Platform and project templates
 │   ├── docker-ubuntu/    # Ubuntu platform template
 │   └── ubuntu-project/   # Project template
 ├── _settings/            # Generated settings (gitignored)
@@ -158,7 +158,7 @@ Service Port = Project Base Port + Offset
 3. Calculates base port (11000 + SN × 200)
 4. Creates platform settings in `_settings/dockers/.env.<platform-name>`
 5. Generates secure passwords/secrets (MySQL, PostgreSQL, JWT)
-6. Copies template from `_templates/docker-ubuntu`
+6. Copies template from `_templates/docker/docker-ubuntu`
 7. Substitutes variables: `${PLATFORM_NAME}`, `${PLATFORM_SN}`, `${BASE_PLATFORM_PORT}`, etc.
 8. Initializes git repository via `xgit` command
 9. Saves metadata to `_manager/data/platforms.json`
@@ -167,7 +167,7 @@ Service Port = Project Base Port + Offset
 1. Reads platform SN from `platforms.json`
 2. Gets next project SN via `port-allocator.js`
 3. Calculates all 20 project ports
-4. Creates project from `_templates/ubuntu-project`
+4. Creates project from `_templates/docker/ubuntu-project`
 5. Substitutes project-specific variables
 6. Generates environment files with port configurations
 7. Saves metadata to `_manager/data/projects.json`

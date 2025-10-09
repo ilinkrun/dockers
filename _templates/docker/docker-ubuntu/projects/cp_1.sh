@@ -28,7 +28,7 @@ UPDATE_REPO_SCRIPT="$SCRIPTS_DIR/update-repositories.js"
 
 # Default values
 TARGET_LOCATION="./"
-TEMPLATE_DIRECTORY="$MY_ROOT_PATH/_templates/ubuntu-project"
+TEMPLATE_DIRECTORY="$MY_ROOT_PATH/_templates/docker/ubuntu-project"
 PLATFORM_NAME=""
 PROJECT_NAME=""
 GITHUB_USER=""
@@ -69,7 +69,7 @@ show_usage() {
     echo "  -u  GitHub username (default: current user)"
     echo "  -d  Project description (default: <project-name>)"
     echo "  -l  Target location (default: ./)"
-    echo "  -t  Template directory (default: $MY_ROOT_PATH/_templates/ubuntu-project)"
+    echo "  -t  Template directory (default: $MY_ROOT_PATH/_templates/docker/ubuntu-project)"
     echo "  -g  Initialize Git repository (true|false, default: true)"
     echo "  -h  Show this help message"
     echo ""

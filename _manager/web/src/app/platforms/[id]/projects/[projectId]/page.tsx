@@ -126,7 +126,7 @@ export default function PlatformProjectDetailPage() {
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">Environment</dt>
-              <dd className="mt-1 text-sm text-gray-900">{project.environment.nodeEnv}</dd>
+              <dd className="mt-1 text-sm text-gray-900">{project.environment?.nodeEnv ?? 'N/A'}</dd>
             </div>
           </dl>
         </div>
@@ -140,19 +140,19 @@ export default function PlatformProjectDetailPage() {
           <dl className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
             <div className="bg-gray-50 px-4 py-3 rounded-lg">
               <dt className="text-sm font-medium text-gray-500">Backend</dt>
-              <dd className="mt-1 text-lg font-mono text-gray-900">{project.ports.backend}</dd>
+              <dd className="mt-1 text-lg font-mono text-gray-900">{project.ports?.backend ?? 'N/A'}</dd>
             </div>
             <div className="bg-gray-50 px-4 py-3 rounded-lg">
               <dt className="text-sm font-medium text-gray-500">GraphQL</dt>
-              <dd className="mt-1 text-lg font-mono text-gray-900">{project.ports.graphql}</dd>
+              <dd className="mt-1 text-lg font-mono text-gray-900">{project.ports?.graphql ?? 'N/A'}</dd>
             </div>
             <div className="bg-gray-50 px-4 py-3 rounded-lg">
               <dt className="text-sm font-medium text-gray-500">Frontend (Next.js)</dt>
-              <dd className="mt-1 text-lg font-mono text-gray-900">{project.ports.frontendNextjs}</dd>
+              <dd className="mt-1 text-lg font-mono text-gray-900">{project.ports?.frontendNextjs ?? 'N/A'}</dd>
             </div>
             <div className="bg-gray-50 px-4 py-3 rounded-lg">
               <dt className="text-sm font-medium text-gray-500">Frontend (SvelteKit)</dt>
-              <dd className="mt-1 text-lg font-mono text-gray-900">{project.ports.frontendSveltekit}</dd>
+              <dd className="mt-1 text-lg font-mono text-gray-900">{project.ports?.frontendSveltekit ?? 'N/A'}</dd>
             </div>
           </dl>
         </div>
@@ -166,15 +166,15 @@ export default function PlatformProjectDetailPage() {
           <dl className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-3">
             <div>
               <dt className="text-sm font-medium text-gray-500">Type</dt>
-              <dd className="mt-1 text-sm text-gray-900 font-mono uppercase">{project.database.type}</dd>
+              <dd className="mt-1 text-sm text-gray-900 font-mono uppercase">{project.database?.type ?? 'N/A'}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">Database Name</dt>
-              <dd className="mt-1 text-sm text-gray-900 font-mono">{project.database.name}</dd>
+              <dd className="mt-1 text-sm text-gray-900 font-mono">{project.database?.name ?? 'N/A'}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">User</dt>
-              <dd className="mt-1 text-sm text-gray-900 font-mono">{project.database.user}</dd>
+              <dd className="mt-1 text-sm text-gray-900 font-mono">{project.database?.user ?? 'N/A'}</dd>
             </div>
           </dl>
         </div>
@@ -188,11 +188,11 @@ export default function PlatformProjectDetailPage() {
           <dl className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
             <div>
               <dt className="text-sm font-medium text-gray-500">Node Environment</dt>
-              <dd className="mt-1 text-sm text-gray-900">{project.environment.nodeEnv}</dd>
+              <dd className="mt-1 text-sm text-gray-900">{project.environment?.nodeEnv ?? 'N/A'}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">CORS Origin</dt>
-              <dd className="mt-1 text-sm text-gray-900 font-mono">{project.environment.corsOrigin}</dd>
+              <dd className="mt-1 text-sm text-gray-900 font-mono">{project.environment?.corsOrigin ?? 'N/A'}</dd>
             </div>
           </dl>
         </div>
