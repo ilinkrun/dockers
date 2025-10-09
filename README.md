@@ -86,7 +86,7 @@ const MAX_PROJECTS_PER_PLATFORM = 10; // 200 / 20
 
 ### _settings 제거 or 통합
 
-/var/services/homes/jungsam/dockers/cu.sh 에 사용되는 SETTINGS_DIR, DOCKERS_SETTINGS_DIR
+/var/services/homes/jungsam/dockers/cu.sh 에 사용되는 SETTINGS_DIR, DOCKERS_SETTINGS_DIR 를 제거해도 ubuntu platform 을 생성하는데 문제가 없으면, 관련 내용들을 제거해주세요.
 
 SETTINGS_DIR="$MY_ROOT_PATH/_settings"
 DOCKERS_SETTINGS_DIR="$SETTINGS_DIR/dockers"
@@ -103,6 +103,14 @@ DOCKERS_SETTINGS_DIR="$SETTINGS_DIR/dockers"
 cd /var/services/homes/jungsam/dockers && xgit -e make -u ilinkrun -n dockers -d "illmac dockers & docker manager in ilmac NAS"
 ```
 
+
+```sh
+# 원격 저장소 삭제
+xgit -e del -u ilinkrun -n ubuntu-kmc
+
+# 원격 & 로컬 저장소 삭제
+cd /var/services/homes/jungsam/dockers/platforms && xgit -e remove -u ilinkrun -n ubuntu-kmc
+```
 
 ## create platform
 
@@ -145,4 +153,79 @@ xgit -e make -n docker-platforms -u ilinkrun -d "docker for platform on ilmac NA
 
 ===
 
+
+`cd /var/services/homes/jungsam/dockers && ./cu.sh -n ubuntu-ilmac -u ilinkrun -d "ilmac ubuntu docker server(개발 및 운영)"` 를 실행했을 때, github 저장소 정보를 `/var/services/homes/jungsam/dockers/_manager/data/repositories.json` 와 같이 추가하도록 ./cu.sh 또는 /var/services/homes/jungsam/dockers/_manager/scripts 폴더에 create-platform.js 를 생성하여 적용해주세요.
+
+
+  작업 내용:
+
+  1. ✅ /var/services/homes/jungsam/dockers/_manager/scripts/update-repositories.js 생성
+    - GitHub 저장소 추가/제거 기능
+    - Non-git 저장소 추가/제거 기능
+    - repositories.json 자동 업데이트
+  2. ✅ cu.sh에 통합
+    - Step 6으로 update-repositories.js 호출 추가
+    - Platform 생성 시 자동으로 repositories.json에 등록
+
+  사용 예시:
+  # Platform 생성 시 자동 등록됨
+  cd /var/services/homes/jungsam/dockers
+  ./cu.sh -n ubuntu-ilmac -u ilinkrun -d "ilmac ubuntu docker server(개발 및 운영)"
+
+  결과:
+  repositories.json에 자동으로 추가됩니다:
+  {
+    "github": {
+      "ubuntu-ilmac": {
+        "name": "ubuntu-ilmac",
+        "scope": "platform",
+        "user": "ilinkrun",
+        "path": {
+          "remote": "https://github.com/ilinkrun/ubuntu-ilmac",
+          "local": "platforms/ubuntu-ilmac"
+        },
+        "description": "ilmac ubuntu docker server(개발 및 운영)",
+        "temp": false
+      }
+    }
+  }
+
+  수동 사용:
+  # GitHub 저장소 추가
+  node _manager/scripts/update-repositories.js add-github ubuntu-test platform testuser "Description"
+  platforms/ubuntu-test
+
+  # 저장소 제거
+  node _manager/scripts/update-repositories.js remove ubuntu-test
+
+===
+
+/var/services/homes/jungsam/dockers/remove-platform.sh 파일을 실행하면 생성된 플랫폼을 제거하도록 하는 스크립트을 만들어주세요.
+
+syntax: ./remove-platform.sh -n [platform-name](예:ubuntu-ilmac) -r remote|local|all(default:remote)
+
+
+0. platform data
+- /var/services/homes/jungsam/dockers/_manager/data/repositories.json 에서 
+  - [github-user]: github[platform-name][user]
+
+
+1. 저장소 삭제
+1-1. remote 저장소 삭제(-r 옵션: remote or all)
+xgit -e del -n [platform-name] -u [github-user]
+
+1-2. local 저장소 삭제(-r 옵션: local or all)
+rm -rf /var/services/homes/jungsam/dockers/platforms/[platform-name]
+
+
+2. data(json) 업데이트
+- 저장소 데이터 삭제: /var/services/homes/jungsam/dockers/_manager/data/repositories.json
+- platform 데어터 삭제: /var/services/homes/jungsam/dockers/_manager/data/platforms.json
+
+
+## 사용례
+
+```
+cd /var/services/homes/jungsam/dockers && ./remove-platform.sh -n ubuntu-ilmac -r all
+```
 

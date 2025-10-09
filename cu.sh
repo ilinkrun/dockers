@@ -14,10 +14,6 @@ fi
 # Use MY_ROOT_PATH or fallback to default
 MY_ROOT_PATH="${MY_ROOT_PATH:-/var/services/homes/jungsam/dockers}"
 
-# Settings directory
-SETTINGS_DIR="$MY_ROOT_PATH/_settings"
-DOCKERS_SETTINGS_DIR="$SETTINGS_DIR/dockers"
-
 # Manager data directory
 MANAGER_DATA_DIR="$MY_ROOT_PATH/_manager/data"
 PLATFORMS_JSON="$MANAGER_DATA_DIR/platforms.json"
@@ -25,6 +21,7 @@ PLATFORMS_JSON="$MANAGER_DATA_DIR/platforms.json"
 # Scripts directory
 SCRIPTS_DIR="$MY_ROOT_PATH/_manager/scripts"
 PORT_ALLOCATOR="$SCRIPTS_DIR/port-allocator.js"
+UPDATE_REPOSITORIES="$SCRIPTS_DIR/update-repositories.js"
 
 # Default values
 TARGET_LOCATION="$MY_ROOT_PATH/platforms"
@@ -165,13 +162,13 @@ update_platforms_json() {
     "
 }
 
-# Create platform settings files
-create_platform_settings() {
+# Generate platform settings (without creating settings files)
+generate_platform_settings() {
     local platform_name="$1"
     local github_user="$2"
     local platform_description="$3"
 
-    echo "Creating platform settings file..."
+    echo "Generating platform settings..."
 
     # Get port allocation
     get_platform_port_allocation "$platform_name"
@@ -181,24 +178,7 @@ create_platform_settings() {
     local postgres_password=$(generate_password)
     local jwt_secret_salt=$(generate_jwt_secret)
     local encryption_key=$(generate_jwt_secret)
-    local created_at=$(date -Iseconds)
 
-    # Create ENV settings file
-    local env_file="$DOCKERS_SETTINGS_DIR/.env.${platform_name}"
-    cp "$DOCKERS_SETTINGS_DIR/template.env" "$env_file"
-
-    # Substitute variables in ENV
-    sed -i "s/{PLATFORM_NAME}/$platform_name/g" "$env_file"
-    sed -i "s/{PLATFORM_DESCRIPTION}/$platform_description/g" "$env_file"
-    sed -i "s/{GITHUB_USER}/$github_user/g" "$env_file"
-    sed -i "s/{PLATFORM_SN}/$PLATFORM_SN/g" "$env_file"
-    sed -i "s/{BASE_PLATFORM_PORT}/$BASE_PLATFORM_PORT/g" "$env_file"
-    sed -i "s/{MYSQL_ROOT_PASSWORD}/$mysql_root_password/g" "$env_file"
-    sed -i "s/{POSTGRES_PASSWORD}/$postgres_password/g" "$env_file"
-    sed -i "s/{JWT_SECRET_SALT}/$jwt_secret_salt/g" "$env_file"
-    sed -i "s/{ENCRYPTION_KEY}/$encryption_key/g" "$env_file"
-
-    echo "✓ Platform settings created: $env_file"
     echo "  Platform SN: $PLATFORM_SN"
     echo "  Base Port: $BASE_PLATFORM_PORT"
 
@@ -207,35 +187,6 @@ create_platform_settings() {
     export PLATFORM_POSTGRES_PASSWORD="$postgres_password"
     export PLATFORM_JWT_SECRET_SALT="$jwt_secret_salt"
     export PLATFORM_ENCRYPTION_KEY="$encryption_key"
-}
-
-# Load existing platform settings if they exist
-load_platform_settings() {
-    local platform_name="$1"
-    local env_file="$DOCKERS_SETTINGS_DIR/.env.${platform_name}"
-
-    if [ -f "$env_file" ]; then
-        echo "Loading existing platform settings from: $env_file"
-        source "$env_file"
-
-        # Calculate PLATFORM_PORT_END
-        PLATFORM_PORT_END=$((BASE_PLATFORM_PORT + 199))
-
-        # Export for template substitution
-        export PLATFORM_MYSQL_ROOT_PASSWORD="$MYSQL_ROOT_PASSWORD"
-        export PLATFORM_POSTGRES_PASSWORD="$POSTGRES_PASSWORD"
-        export PLATFORM_JWT_SECRET_SALT="$JWT_SECRET_SALT"
-        export PLATFORM_ENCRYPTION_KEY="$ENCRYPTION_KEY"
-        export PLATFORM_SN="$PLATFORM_SN"
-        export BASE_PLATFORM_PORT="$BASE_PLATFORM_PORT"
-        export PLATFORM_PORT_END="$PLATFORM_PORT_END"
-
-        echo "  Platform SN: $PLATFORM_SN"
-        echo "  Base Port: $BASE_PLATFORM_PORT"
-
-        return 0
-    fi
-    return 1
 }
 
 # Parse command line arguments
@@ -302,11 +253,8 @@ if [ ! -d "$TEMPLATE_DIRECTORY" ]; then
     exit 1
 fi
 
-# Create settings directory if it doesn't exist
-mkdir -p "$DOCKERS_SETTINGS_DIR"
-
-# Always create new platform settings from template (don't load existing)
-create_platform_settings "$PLATFORM_NAME" "$GITHUB_USER" "$PLATFORM_DESCRIPTION"
+# Generate platform settings (without creating settings files)
+generate_platform_settings "$PLATFORM_NAME" "$GITHUB_USER" "$PLATFORM_DESCRIPTION"
 
 # Create variable transformations
 PLATFORM_NAME_UPPER=$(echo "$PLATFORM_NAME" | tr '[:lower:]' '[:upper:]' | tr '-' '_')
@@ -423,6 +371,17 @@ echo ""
 echo "Step 5: Updating platforms.json..."
 cd "$MY_ROOT_PATH"
 update_platforms_json "$PLATFORM_NAME" "$GITHUB_USER" "$PLATFORM_DESCRIPTION"
+
+# Step 6: Update repositories.json
+echo ""
+echo "Step 6: Updating repositories.json..."
+if [ -f "$UPDATE_REPOSITORIES" ]; then
+    # Calculate relative path from MY_ROOT_PATH
+    RELATIVE_PATH="platforms/$PLATFORM_NAME"
+    node "$UPDATE_REPOSITORIES" add-github "$PLATFORM_NAME" "platform" "$GITHUB_USER" "$PLATFORM_DESCRIPTION" "$RELATIVE_PATH"
+else
+    echo "  ⚠ Warning: update-repositories.js not found. Skipping repository registration."
+fi
 
 echo ""
 echo "✅ Platform '$PLATFORM_NAME' created successfully!"
