@@ -2,7 +2,7 @@ import { execSync } from "child_process";
 import * as path from "path";
 
 const DOCKERS_ROOT =
-  process.env.MY_ROOT_PATH || "/var/services/homes/jungsam/dockers";
+  process.env.DOCKER_ROOT_PATH || "/var/services/homes/jungsam/dockers";
 const PORT_ALLOCATOR = path.join(
   DOCKERS_ROOT,
   "_manager",

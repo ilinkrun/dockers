@@ -12,23 +12,23 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Load MY_ROOT_PATH from .env (go up 3 levels from projects/ to reach docker-platforms/)
+# Load DOCKER_ROOT_PATH from .env (go up 3 levels from projects/ to reach docker-platforms/)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd ../../.. && pwd)"
 if [ -f "$SCRIPT_DIR/.env" ]; then
     source "$SCRIPT_DIR/.env"
 fi
 
-# Use MY_ROOT_PATH or fallback to default
-MY_ROOT_PATH="${MY_ROOT_PATH:-/var/services/homes/jungsam/dockers}"
+# Use DOCKER_ROOT_PATH or fallback to default
+DOCKER_ROOT_PATH="${DOCKER_ROOT_PATH:-/var/services/homes/jungsam/dockers}"
 
 # Scripts directory
-SCRIPTS_DIR="$MY_ROOT_PATH/_manager/scripts"
+SCRIPTS_DIR="$DOCKER_ROOT_PATH/_manager/scripts"
 CREATE_DB_SCRIPT="$SCRIPTS_DIR/create-project-db.js"
 UPDATE_REPO_SCRIPT="$SCRIPTS_DIR/update-repositories.js"
 
 # Default values
 TARGET_LOCATION="./"
-TEMPLATE_DIRECTORY="$MY_ROOT_PATH/_templates/docker/ubuntu-project"
+TEMPLATE_DIRECTORY="$DOCKER_ROOT_PATH/_templates/docker/ubuntu-project"
 PLATFORM_NAME=""
 PROJECT_NAME=""
 GITHUB_USER=""
@@ -69,7 +69,7 @@ show_usage() {
     echo "  -u  GitHub username (default: current user)"
     echo "  -d  Project description (default: <project-name>)"
     echo "  -l  Target location (default: ./)"
-    echo "  -t  Template directory (default: $MY_ROOT_PATH/_templates/ubuntu-project)"
+    echo "  -t  Template directory (default: $DOCKER_ROOT_PATH/_templates/ubuntu-project)"
     echo "  -g  Initialize Git repository (true|false, default: true)"
     echo "  -h  Show this help message"
     echo ""
@@ -176,7 +176,7 @@ validate_project_name() {
 # Load platform environment variables
 load_platform_env() {
     local platform_name="$1"
-    local platform_env_file="$MY_ROOT_PATH/platforms/$platform_name/.env"
+    local platform_env_file="$DOCKER_ROOT_PATH/platforms/$platform_name/.env"
 
     if [ ! -f "$platform_env_file" ]; then
         log_error "Platform .env file not found: $platform_env_file"
@@ -450,7 +450,7 @@ update_projects_json() {
     local github_user="$4"
     local status="$5"
 
-    local projects_file="$MY_ROOT_PATH/_manager/data/projects.json"
+    local projects_file="$DOCKER_ROOT_PATH/_manager/data/projects.json"
     local update_projects_script="$SCRIPTS_DIR/update-projects.js"
 
     if [ ! -f "$projects_file" ]; then

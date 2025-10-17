@@ -15,6 +15,71 @@
 
 const mysql = require('mysql2/promise');
 const { Client } = require('pg');
+const path = require('path');
+const fs = require('fs');
+
+/**
+ * Load environment variables from .env file
+ */
+function loadEnvFile(envPath) {
+  if (!fs.existsSync(envPath)) {
+    throw new Error(`Environment file not found: ${envPath}`);
+  }
+
+  const envContent = fs.readFileSync(envPath, 'utf8');
+  const envVars = {};
+
+  envContent.split('\n').forEach(line => {
+    line = line.trim();
+
+    // Skip comments and empty lines
+    if (!line || line.startsWith('#')) return;
+
+    const match = line.match(/^([A-Z_][A-Z0-9_]*)\s*=\s*(.*)$/);
+    if (match) {
+      let [, key, value] = match;
+
+      // Remove quotes
+      value = value.trim();
+      if ((value.startsWith('"') && value.endsWith('"')) ||
+          (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1);
+      }
+
+      // Resolve variable references like ${VAR}
+      value = value.replace(/\$\{([A-Z_][A-Z0-9_]*)\}/g, (match, varName) => {
+        return envVars[varName] || match;
+      });
+
+      envVars[key] = value;
+    }
+  });
+
+  return envVars;
+}
+
+/**
+ * Get connection settings from .env file
+ */
+function getConnectSettings() {
+  const rootEnvPath = path.resolve(__dirname, '../../.env');
+  const env = loadEnvFile(rootEnvPath);
+
+  return {
+    mysql: {
+      host: env.MYSQL_HOST || '1.231.118.217',
+      port: parseInt(env.MYSQL_PORT) || 20201,
+      user: env.MYSQL_USER || 'root',
+      password: env.MYSQL_ROOT_PASSWORD || env.MYSQL_PASSWORD || ''
+    },
+    postgresql: {
+      host: env.POSTGRES_HOST || '1.231.118.217',
+      port: parseInt(env.POSTGRES_PORT) || 20203,
+      user: env.POSTGRES_USER || 'admin',
+      password: env.POSTGRES_PASSWORD || ''
+    }
+  };
+}
 
 /**
  * Convert string to snake_case
@@ -310,25 +375,15 @@ Example:
 
   const [platformName, projectName, serverType] = args;
 
-  // For CLI usage, you need to provide connection settings
-  // This is a test configuration - in real usage, these should come from .env
-  const testConnectSetting = {
-    mysql: {
-      host: '1.231.118.217',
-      port: 2306,
-      user: 'root',
-      password: 'mysqlIlmac1!'
-    },
-    postgresql: {
-      host: '1.231.118.217',
-      port: 5433,
-      user: 'admin',
-      password: 'IlmacPost9)'
-    }
-  };
-
+  // Load connection settings from .env file
+  const connectSettings = getConnectSettings();
   const server = serverType.toLowerCase();
-  const connectSetting = server.includes('postgres') ? testConnectSetting.postgresql : testConnectSetting.mysql;
+  const connectSetting = server.includes('postgres') ? connectSettings.postgresql : connectSettings.mysql;
+
+  console.log(`\n📋 Using connection settings from .env:`);
+  console.log(`   Host: ${connectSetting.host}`);
+  console.log(`   Port: ${connectSetting.port}`);
+  console.log(`   User: ${connectSetting.user}`);
 
   createProjectDb(platformName, projectName, connectSetting, server)
     .then((result) => {

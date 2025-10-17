@@ -6,7 +6,7 @@ import { promises as fs } from "fs";
 
 const router = express.Router();
 const execAsync = promisify(exec);
-const DOCKERS_ROOT = process.env.MY_ROOT_PATH || "/var/services/homes/jungsam/dockers";
+const DOCKERS_ROOT = process.env.DOCKER_ROOT_PATH || "/var/services/homes/jungsam/dockers";
 
 /**
  * @swagger

@@ -5,8 +5,13 @@ node_modules/
 # data
 data/
 
-# platforms
-/platforms/
+# docker
+platforms/
+# databases/
+mysql_data/
+postgres_data/
+networks/
+servers/
 
 # private
 .env

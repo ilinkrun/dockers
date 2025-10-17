@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Docker-based platform management system for creating and managing multiple isolated Ubuntu development platforms on a Synology NAS. Each platform can host multiple projects with automated port allocation, infrastructure services, and standardized tooling.
 
-**Key Concept**: Root path is `/var/services/homes/jungsam/dockers` (configurable via `.env` as `MY_ROOT_PATH`)
+**Key Concept**: Root path is `/var/services/homes/jungsam/dockers` (configurable via `.env` as `DOCKER_ROOT_PATH`)
 
 ## Repository Structure
 
@@ -153,7 +153,7 @@ Service Port = Project Base Port + Offset
 ## Architecture
 
 ### Platform Creation Flow (`cu.sh`)
-1. Loads `MY_ROOT_PATH` from `.env`
+1. Loads `DOCKER_ROOT_PATH` from `.env`
 2. Calls `port-allocator.js` to get next platform SN
 3. Calculates base port (11000 + SN × 200)
 4. Creates platform settings in `_settings/dockers/.env.<platform-name>`
@@ -249,7 +249,7 @@ When working with templates, these variables are automatically substituted:
 2. **Never manually assign ports**: Use port-allocator.js for all port assignments
 3. **Check next available SN**: Before creating platforms/projects, verify available SNs
 4. **Use environment variables**: Reference ports via env vars in docker-compose files, not hardcoded values
-5. **Root path flexibility**: Code should use `MY_ROOT_PATH` from `.env`, not hardcoded `/var/services/homes/jungsam/dockers`
+5. **Root path flexibility**: Code should use `DOCKER_ROOT_PATH` from `.env`, not hardcoded `/var/services/homes/jungsam/dockers`
 6. **Template updates**: When modifying templates, ensure variable substitution patterns remain intact
 
 ## Data Management

@@ -88,7 +88,7 @@ const MAX_PROJECTS_PER_PLATFORM = 10; // 200 / 20
 
 /var/services/homes/jungsam/dockers/cu.sh 에 사용되는 SETTINGS_DIR, DOCKERS_SETTINGS_DIR 를 제거해도 ubuntu platform 을 생성하는데 문제가 없으면, 관련 내용들을 제거해주세요.
 
-SETTINGS_DIR="$MY_ROOT_PATH/_settings"
+SETTINGS_DIR="$DOCKER_ROOT_PATH/_settings"
 DOCKERS_SETTINGS_DIR="$SETTINGS_DIR/dockers"
 
 ```
@@ -142,14 +142,14 @@ xgit -e make -n docker-platforms -u ilinkrun -d "docker for platform on ilmac NA
 
 ```
 
-- /var/services/homes/jungsam/dockers/cu.sh, /var/services/homes/jungsam/dockers/_templates/docker-ubuntu/projects/cp.sh 등에 하드코딩된 '/var/services/homes/jungsam/dockers' 를 /var/services/homes/jungsam/dockers/.env 에 있는 MY_ROOT_PATH 값으로 대체되나요?
+- /var/services/homes/jungsam/dockers/cu.sh, /var/services/homes/jungsam/dockers/_templates/docker-ubuntu/projects/cp.sh 등에 하드코딩된 '/var/services/homes/jungsam/dockers' 를 /var/services/homes/jungsam/dockers/.env 에 있는 DOCKER_ROOT_PATH 값으로 대체되나요?
 
-- cu.sh, cp.sh에서 .env에서 MY_ROOT_PATH 를 읽어와서 /var/services/homes/jungsam/dockers 부분을 MY_ROOT_PATH 로 치환할 수 없나요?
+- cu.sh, cp.sh에서 .env에서 DOCKER_ROOT_PATH 를 읽어와서 /var/services/homes/jungsam/dockers 부분을 DOCKER_ROOT_PATH 로 치환할 수 없나요?
 
- /var/services/homes/jungsam/dockers/cu.sh 에서 템플릿 /var/services/homes/jungsam/dockers/_templates/docker-ubuntu 를 복사해서 넣는 디렉토리는 MY_ROOT_PATH 가 아니라 MY_ROOT_PATH/platforms입니다. 해당 내용을 수정해주세요.
+ /var/services/homes/jungsam/dockers/cu.sh 에서 템플릿 /var/services/homes/jungsam/dockers/_templates/docker-ubuntu 를 복사해서 넣는 디렉토리는 DOCKER_ROOT_PATH 가 아니라 DOCKER_ROOT_PATH/platforms입니다. 해당 내용을 수정해주세요.
 
 
- /var/services/homes/jungsam/dockers/_templates/docker-ubuntu/projects/cp.sh 에서도 MY_ROOT_PATH/platforms/<platform_name>/projects
+ /var/services/homes/jungsam/dockers/_templates/docker-ubuntu/projects/cp.sh 에서도 DOCKER_ROOT_PATH/platforms/<platform_name>/projects
 
 ===
 
@@ -299,3 +299,29 @@ cd /var/services/homes/jungsam/dockers/platforms/ubuntu-ilmac/projects && ./cp.s
 `cd /var/services/homes/jungsam/dockers/platforms/ubuntu-ilmac/projects && ./cp.sh -p ubuntu-ilmac -n ubuntu-project-2 -u ilinkrun -d "ubuntu project 2"` 를 실행하였더니, 다른 기능들은 다 잘 되는데, /var/services/homes/jungsam/dockers/_manager/data/projects.json 에 프로젝트 정보가 추가되지 않아요.
 
 ===
+
+## remove
+
+```sh
+# platform
+cd /var/services/homes/jungsam/dockers && ./remove-platform.sh -n ubuntu-ilmac -r all
+
+# project
+cd /var/services/homes/jungsam/dockers && ./remove-project.sh -n ubuntu-project-2 -r all
+cd /var/services/homes/jungsam/dockers && ./remove-project.sh -n ilmac-work-web -r all
+```
+
+===
+
+## create platform & project
+```sh
+# platform
+cd /var/services/homes/jungsam/dockers && ./cu.sh -n ubuntu-ilmac -u ilinkrun -d "ilmac ubuntu docker server(개발 및 운영)"
+
+# project
+cd /var/services/homes/jungsam/dockers/platforms/ubuntu-ilmac/projects && ./cp.sh -p ubuntu-ilmac -n ubuntu-project-1 -u ilinkrun -d "ilmac ubuntu project 1"
+
+# 
+cd /var/services/homes/jungsam/dockers/platforms/ubuntu-ilmac && docker-compose up -d
+
+```

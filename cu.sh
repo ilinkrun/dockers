@@ -5,27 +5,27 @@
 
 set -e
 
-# Load MY_ROOT_PATH from .env
+# Load DOCKER_ROOT_PATH from .env
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [ -f "$SCRIPT_DIR/.env" ]; then
     source "$SCRIPT_DIR/.env"
 fi
 
-# Use MY_ROOT_PATH or fallback to default
-MY_ROOT_PATH="${MY_ROOT_PATH:-/var/services/homes/jungsam/dockers}"
+# Use DOCKER_ROOT_PATH or fallback to default
+DOCKER_ROOT_PATH="${DOCKER_ROOT_PATH:-/var/services/homes/jungsam/dockers}"
 
 # Manager data directory
-MANAGER_DATA_DIR="$MY_ROOT_PATH/_manager/data"
+MANAGER_DATA_DIR="$DOCKER_ROOT_PATH/_manager/data"
 PLATFORMS_JSON="$MANAGER_DATA_DIR/platforms.json"
 
 # Scripts directory
-SCRIPTS_DIR="$MY_ROOT_PATH/_manager/scripts"
+SCRIPTS_DIR="$DOCKER_ROOT_PATH/_manager/scripts"
 PORT_ALLOCATOR="$SCRIPTS_DIR/port-allocator.js"
 UPDATE_REPOSITORIES="$SCRIPTS_DIR/update-repositories.js"
 
 # Default values
-TARGET_LOCATION="$MY_ROOT_PATH/platforms"
-TEMPLATE_DIRECTORY="$MY_ROOT_PATH/_templates/docker/docker-ubuntu"
+TARGET_LOCATION="$DOCKER_ROOT_PATH/platforms"
+TEMPLATE_DIRECTORY="$DOCKER_ROOT_PATH/_templates/docker/docker-ubuntu"
 PLATFORM_NAME=""
 GITHUB_USER=""
 PLATFORM_DESCRIPTION=""
@@ -215,7 +215,7 @@ while getopts "n:u:d:l:t:h" opt; do
             echo "  -u  GitHub username (required)"
             echo "  -d  Platform description (required)"
             echo "  -l  Target location (default: ./)"
-            echo "  -t  Template directory (default: $MY_ROOT_PATH/_templates/docker/docker-ubuntu)"
+            echo "  -t  Template directory (default: $DOCKER_ROOT_PATH/_templates/docker/docker-ubuntu)"
             echo "  -h  Show this help message"
             exit 0
             ;;
@@ -286,8 +286,6 @@ echo "Step 2: Performing PLATFORM_NAME variable substitution..."
 
 # List of files to process for PLATFORM_NAME variables
 FILES_TO_SUBSTITUTE=(
-    "$PLATFORM_NAME/.env"
-    "$PLATFORM_NAME/.env.sample"
     "$PLATFORM_NAME/scripts/dev-start.sh"
     "$PLATFORM_NAME/README.md"
     "$PLATFORM_NAME/package.json"
@@ -369,14 +367,14 @@ fi
 # Step 5: Update platforms.json
 echo ""
 echo "Step 5: Updating platforms.json..."
-cd "$MY_ROOT_PATH"
+cd "$DOCKER_ROOT_PATH"
 update_platforms_json "$PLATFORM_NAME" "$GITHUB_USER" "$PLATFORM_DESCRIPTION"
 
 # Step 6: Update repositories.json
 echo ""
 echo "Step 6: Updating repositories.json..."
 if [ -f "$UPDATE_REPOSITORIES" ]; then
-    # Calculate relative path from MY_ROOT_PATH
+    # Calculate relative path from DOCKER_ROOT_PATH
     RELATIVE_PATH="platforms/$PLATFORM_NAME"
     node "$UPDATE_REPOSITORIES" add-github "$PLATFORM_NAME" "platform" "$GITHUB_USER" "$PLATFORM_DESCRIPTION" "$RELATIVE_PATH"
 else

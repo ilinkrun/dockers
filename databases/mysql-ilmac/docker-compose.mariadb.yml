@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  mysql:
+    image: mariadb:10.6
+    container_name: ${MYSQL_CONTAINER_NAME}
+    restart: unless-stopped
+    ports:
+      - "${MYSQL_PORT}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      TZ: Asia/Seoul
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --innodb-buffer-pool-size=128M
+      --max-connections=100
+      --innodb-flush-log-at-trx-commit=2
+      --default-authentication-plugin=mysql_native_password
+      --bind-address=0.0.0.0
+    security_opt:
+      - seccomp:unconfined
+
+volumes:
+  mysql_data:
+    name: ilmac_mysql_data

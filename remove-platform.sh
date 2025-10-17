@@ -5,28 +5,28 @@
 
 set -e
 
-# Load MY_ROOT_PATH from .env
+# Load DOCKER_ROOT_PATH from .env
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [ -f "$SCRIPT_DIR/.env" ]; then
     source "$SCRIPT_DIR/.env"
 fi
 
-# Use MY_ROOT_PATH or fallback to default
-MY_ROOT_PATH="${MY_ROOT_PATH:-/var/services/homes/jungsam/dockers}"
+# Use DOCKER_ROOT_PATH or fallback to default
+DOCKER_ROOT_PATH="${DOCKER_ROOT_PATH:-/var/services/homes/jungsam/dockers}"
 
 # Manager data directory
-MANAGER_DATA_DIR="$MY_ROOT_PATH/_manager/data"
+MANAGER_DATA_DIR="$DOCKER_ROOT_PATH/_manager/data"
 PLATFORMS_JSON="$MANAGER_DATA_DIR/platforms.json"
 REPOSITORIES_JSON="$MANAGER_DATA_DIR/repositories.json"
 
 # Scripts directory
-SCRIPTS_DIR="$MY_ROOT_PATH/_manager/scripts"
+SCRIPTS_DIR="$DOCKER_ROOT_PATH/_manager/scripts"
 UPDATE_REPOSITORIES="$SCRIPTS_DIR/update-repositories.js"
 
 # Default values
 PLATFORM_NAME=""
 REMOVE_TYPE="remote"  # remote, local, all
-PLATFORMS_DIR="$MY_ROOT_PATH/platforms"
+PLATFORMS_DIR="$DOCKER_ROOT_PATH/platforms"
 
 # Get platform data from repositories.json
 get_platform_data() {
