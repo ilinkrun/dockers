@@ -15,9 +15,11 @@ import { specs, swaggerUi } from './swagger/config';
 
 // Load root .env file
 dotenv.config({ path: path.join(__dirname, '../../..', '.env') });
+// Load local api .env file (for CORS_ORIGIN, etc.)
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 const app = express();
-const PORT = process.env.MANAGER_API_PORT || 20101;
+const PORT = process.env.MANAGER_API_PORT || process.env.MANAGER_API_REST_PORT || 20101;
 
 // Middleware - Completely disable helmet for HTTP development
 if (process.env.NODE_ENV === 'production') {
@@ -26,13 +28,43 @@ if (process.env.NODE_ENV === 'production') {
   // Development mode: disable all security headers that cause issues with HTTP
   console.log('🔓 Development mode: Security headers disabled');
 }
+
+// Configure CORS origin from environment variable
+let corsOrigin: string | RegExp | (string | RegExp)[] | ((origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => void) = '*';
+
+if (process.env.CORS_ORIGIN && process.env.CORS_ORIGIN !== '*') {
+  const origins = process.env.CORS_ORIGIN.split(',').map(o => o.trim());
+
+  // Convert IP/hostname to regex pattern that matches any protocol and port
+  corsOrigin = (origin, callback) => {
+    if (!origin) {
+      // Allow requests with no origin (like mobile apps, curl, etc.)
+      return callback(null, true);
+    }
+
+    // Check if origin matches any of the allowed IPs/hostnames
+    const allowed = origins.some(allowedHost => {
+      // If it's already a full URL, match exactly
+      if (allowedHost.startsWith('http://') || allowedHost.startsWith('https://')) {
+        return origin === allowedHost;
+      }
+
+      // If it's just IP/hostname, match against any protocol and port
+      const urlPattern = new RegExp(`^https?://${allowedHost.replace('.', '\\.')}(:\\d+)?$`);
+      return urlPattern.test(origin);
+    });
+
+    if (allowed) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  };
+}
+
 app.use(cors({
-  origin: [
-    'http://localhost:20100',
-    'http://1.231.118.217:20100',
-    'http://1.231.118.217:20101'
-  ],
-  credentials: true,
+  origin: corsOrigin,
+  credentials: process.env.CORS_ORIGIN !== '*',
   optionsSuccessStatus: 200
 }));
 app.use(express.json({ limit: '10mb' }));

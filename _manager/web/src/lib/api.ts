@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:20101';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_REST_URL || 'http://localhost:20101';
 
 export interface Platform {
   id: string;

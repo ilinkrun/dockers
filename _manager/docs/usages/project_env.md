@@ -214,7 +214,7 @@ Make sure variables have `NEXT_PUBLIC_` prefix in `.env.local`:
 
 ```bash
 # ✅ Correct
-NEXT_PUBLIC_API_URL=http://localhost:20100
+NEXT_PUBLIC_API_REST_URL=http://localhost:20100
 
 # ❌ Wrong (won't work on client-side)
 API_URL=http://localhost:20100

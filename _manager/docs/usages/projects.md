@@ -132,7 +132,7 @@ export async function getServerSideProps() {
 
 // 클라이언트 사이드는 NEXT_PUBLIC_ 필요
 // .env 파일에 추가:
-// NEXT_PUBLIC_API_URL=http://localhost:11203
+// NEXT_PUBLIC_API_REST_URL=http://localhost:11203
 4. Frontend SvelteKit
 // 서버 사이드에서 직접 사용
 import { MYSQL_HOST } from '$env/static/private';
