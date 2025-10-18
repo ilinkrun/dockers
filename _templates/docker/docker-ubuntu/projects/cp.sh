@@ -25,6 +25,12 @@ DOCKER_ROOT_PATH="${DOCKER_ROOT_PATH:-/var/services/homes/jungsam/dockers}"
 SCRIPTS_DIR="$DOCKER_ROOT_PATH/_manager/scripts"
 CREATE_DB_SCRIPT="$SCRIPTS_DIR/create-project-db.js"
 UPDATE_REPO_SCRIPT="$SCRIPTS_DIR/update-repositories.js"
+PORT_ALLOCATOR="$SCRIPTS_DIR/port-allocator.js"
+
+# Manager data directory
+MANAGER_DATA_DIR="$DOCKER_ROOT_PATH/_manager/data"
+PLATFORMS_JSON="$MANAGER_DATA_DIR/platforms.json"
+PROJECTS_JSON="$MANAGER_DATA_DIR/projects.json"
 
 # Default values
 TARGET_LOCATION="./"
@@ -267,21 +273,96 @@ create_databases() {
     log_success "Databases created successfully"
 }
 
-# Calculate port variables
+# Get platform SN from platforms.json
+get_platform_sn() {
+    local platform_name="$1"
+
+    if [ ! -f "$PLATFORMS_JSON" ]; then
+        log_error "platforms.json not found: $PLATFORMS_JSON"
+        exit 1
+    fi
+
+    # Extract platform SN using node
+    PLATFORM_SN=$(node -e "
+        const fs = require('fs');
+        const data = JSON.parse(fs.readFileSync('$PLATFORMS_JSON', 'utf-8'));
+        const platform = data.platforms['$platform_name'];
+        if (platform && platform.sn !== undefined) {
+            console.log(platform.sn);
+        } else {
+            console.error('Platform not found: $platform_name');
+            process.exit(1);
+        }
+    " 2>&1)
+
+    if [ $? -ne 0 ]; then
+        log_error "Failed to get platform SN for: $platform_name"
+        exit 1
+    fi
+
+    export PLATFORM_SN
+    log_info "Platform SN: $PLATFORM_SN"
+}
+
+# Calculate port variables using port-allocator
 calculate_ports() {
-    local base_port="$PLATFORM_PORT_START"
+    local platform_name="$1"
 
-    log_info "Calculating port assignments from base port: $base_port"
+    # Get platform SN
+    get_platform_sn "$platform_name"
 
-    # Calculate PORT_1 to PORT_19
-    for i in {1..19}; do
-        local port=$((base_port + i))
-        eval "export PORT_$i=$port"
-    done
+    # Get next project SN
+    if [ ! -f "$PORT_ALLOCATOR" ]; then
+        log_error "Port allocator not found: $PORT_ALLOCATOR"
+        exit 1
+    fi
+
+    PROJECT_SN=$(node "$PORT_ALLOCATOR" next-project "$PROJECTS_JSON" "$platform_name" 2>&1 | tr -d $'\r\n')
+    if [ -z "$PROJECT_SN" ]; then
+        PROJECT_SN=0
+    fi
+    export PROJECT_SN
+
+    log_info "Calculating port assignments..."
+    log_info "Platform SN: $PLATFORM_SN"
+    log_info "Project SN: $PROJECT_SN"
+
+    # Get project ports from port-allocator
+    local port_info=$(node "$PORT_ALLOCATOR" project "$PLATFORM_SN" "$PROJECT_SN")
+
+    if [ $? -ne 0 ]; then
+        log_error "Failed to calculate project ports"
+        exit 1
+    fi
+
+    # Extract base port and individual ports
+    BASE_PROJECT_PORT=$(echo "$port_info" | grep -o '"basePort": [0-9]*' | grep -o '[0-9]*')
+
+    # Extract project ports (offsets 0-9)
+    BE_NODEJS_PORT=$(echo "$port_info" | grep -A 2 '"beNodejs"' | grep '"port"' | grep -o '[0-9]*')
+    BE_PYTHON_PORT=$(echo "$port_info" | grep -A 2 '"bePython"' | grep '"port"' | grep -o '[0-9]*')
+    API_GRAPHQL_PORT=$(echo "$port_info" | grep -A 2 '"apiGraphql"' | grep '"port"' | grep -o '[0-9]*')
+    API_REST_PORT=$(echo "$port_info" | grep -A 2 '"apiRest"' | grep '"port"' | grep -o '[0-9]*')
+    FE_NEXTJS_PORT=$(echo "$port_info" | grep -A 2 '"feNextjs"' | grep '"port"' | grep -o '[0-9]*')
+    FE_SVELTEKIT_PORT=$(echo "$port_info" | grep -A 2 '"feSveltekit"' | grep '"port"' | grep -o '[0-9]*')
+
+    # Export all ports
+    export BASE_PROJECT_PORT
+    export BE_NODEJS_PORT
+    export BE_PYTHON_PORT
+    export API_GRAPHQL_PORT
+    export API_REST_PORT
+    export FE_NEXTJS_PORT
+    export FE_SVELTEKIT_PORT
 
     log_success "Port assignments calculated"
-    log_info "PORT_1 (BE Node.js): ${PORT_1}"
-    log_info "PORT_6 (FE Next.js): ${PORT_6}"
+    log_info "Base Port: $BASE_PROJECT_PORT"
+    log_info "Backend (Node.js): $BE_NODEJS_PORT"
+    log_info "Backend (Python): $BE_PYTHON_PORT"
+    log_info "API (GraphQL): $API_GRAPHQL_PORT"
+    log_info "API (REST): $API_REST_PORT"
+    log_info "Frontend (Next.js): $FE_NEXTJS_PORT"
+    log_info "Frontend (SvelteKit): $FE_SVELTEKIT_PORT"
 }
 
 # 템플릿 복사
@@ -335,12 +416,18 @@ substitute_template_variables() {
             # Project database name
             sed -i "s|{PROJECT_DB_NAME}|$PROJECT_DB_NAME|g" "$env_file"
 
-            # Port variables (PORT_1 to PORT_19)
-            for i in {1..19}; do
-                local port_var="PORT_$i"
-                local port_value="${!port_var}"
-                sed -i "s|\${PORT_$i}|$port_value|g" "$env_file"
-            done
+            # Platform and Project SN
+            sed -i "s|\${PLATFORM_SN}|$PLATFORM_SN|g" "$env_file"
+            sed -i "s|\${PROJECT_SN}|$PROJECT_SN|g" "$env_file"
+
+            # Port variables (new structure - 10 ports total)
+            sed -i "s|\${BASE_PROJECT_PORT}|$BASE_PROJECT_PORT|g" "$env_file"
+            sed -i "s|\${BE_NODEJS_PORT}|$BE_NODEJS_PORT|g" "$env_file"
+            sed -i "s|\${BE_PYTHON_PORT}|$BE_PYTHON_PORT|g" "$env_file"
+            sed -i "s|\${API_GRAPHQL_PORT}|$API_GRAPHQL_PORT|g" "$env_file"
+            sed -i "s|\${API_REST_PORT}|$API_REST_PORT|g" "$env_file"
+            sed -i "s|\${FE_NEXTJS_PORT}|$FE_NEXTJS_PORT|g" "$env_file"
+            sed -i "s|\${FE_SVELTEKIT_PORT}|$FE_SVELTEKIT_PORT|g" "$env_file"
 
             log_success "Variables substituted in $file_desc"
         fi
@@ -488,7 +575,7 @@ validate_project_name "$PROJECT_NAME"
 load_platform_env "$PLATFORM_NAME"
 
 # Calculate ports
-calculate_ports
+calculate_ports "$PLATFORM_NAME"
 
 # Create databases
 create_databases "$PLATFORM_NAME" "$PROJECT_NAME"
@@ -543,12 +630,13 @@ echo "   MySQL Database: $MYSQL_DB_NAME"
 echo "   PostgreSQL Database: $POSTGRES_DB_NAME"
 echo ""
 log_info "🔌 Port Assignments:"
-echo "   Backend (Node.js): ${PORT_1}"
-echo "   Backend (Python): ${PORT_2}"
-echo "   GraphQL API: ${PORT_3}"
-echo "   REST API: ${PORT_4}"
-echo "   Frontend (Next.js): ${PORT_6}"
-echo "   Frontend (Svelte): ${PORT_7}"
+echo "   Base Port: ${BASE_PROJECT_PORT}"
+echo "   Backend (Node.js): ${BE_NODEJS_PORT}"
+echo "   Backend (Python): ${BE_PYTHON_PORT}"
+echo "   GraphQL API: ${API_GRAPHQL_PORT}"
+echo "   REST API: ${API_REST_PORT}"
+echo "   Frontend (Next.js): ${FE_NEXTJS_PORT}"
+echo "   Frontend (SvelteKit): ${FE_SVELTEKIT_PORT}"
 echo ""
 log_info "📝 Next Steps:"
 echo "   1. cd $TARGET_LOCATION/$PROJECT_NAME"

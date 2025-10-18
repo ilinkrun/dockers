@@ -15,15 +15,12 @@ services:
       # 현재 디렉토리를 /exposed에 마운트 (Claude Code 호환성)
       - "${CURRENT_DIR_LOCAL}:${CURRENT_DIR_DOCKER}"
       # Chrome
-      - "${CHROMIUM_EXECUTABLE_FOLDER_LOCAL}:${CHROMIUM_EXECUTABLE_FOLDER_DOCKER}"
       - "${CHROME_EXECUTABLE_PATH_LOCAL}:${CHROME_EXECUTABLE_FOLDER_DOCKER}"
       - "${CHROME_USERDATA_PATH_LOCAL}:${CHROME_USERDATA_PATH_DOCKER}"
       - "${CHROME_FONTS_PATH_LOCAL}:${CHROME_FONTS_PATH_DOCKER}"
       # bashrc 설정 파일 마운트
       - "${BASHRC_LOCAL}:${BASHRC_DOCKER}"
       - "${CRONTAB_LOCAL}:${CRONTAB_DOCKER}"
-      # global node_modules
-      - "${GOLBAL_NODE_MODULES_LOCAL}:${GOLBAL_NODE_MODULES_DOCKER}"
       # .claude
       - "${CLAUDE_SETTING_LOCAL}:${CLAUDE_SETTING_DOCKER}"
       # VSCode 및 Cursor 확장 프로그램 지속성을 위한 볼륨
@@ -35,7 +32,7 @@ services:
     environment:
       # SSH 설정
       - SSH_PORT=22
-      - ROOT_PASSWORD=${PLATFORM_SSH_ROOT_PASSWORD}
+      - ROOT_PASSWORD=${SSH_ROOT_PASSWORD}
 
       # MySQL 설정
       - MYSQL_HOST=${MYSQL_HOST}

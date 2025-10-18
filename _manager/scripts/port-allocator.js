@@ -3,18 +3,21 @@
 /**
  * Port Allocation System for Docker Platforms
  *
- * Port Range: 11000 - 19999 (9000 ports total)
+ * Port Range: 21000 - 30000 (9000 ports total)
  * - Platform: 200 ports each (max 45 platforms)
- *   - SSH: Platform base port (1 per platform)
- *   - Project: 20 ports each (max 10 projects per platform)
+ *   - Platform Common: 20 ports (offsets 0-19)
+ *   - Projects: 10 ports each (max 18 projects, offsets 20-199)
  *
  * Port Structure:
- * - Platform SSH: Platform base port + 0
- * - Project ports per Project (20 ports):
- *   - PRODUCTION (0-9): BE-Node(0), BE-Python(1), API-GraphQL(2), API-REST(3),
- *                       API-Reserved(4), FE-Next(5), FE-Svelte(6), FE-Reserved(7),
- *                       SYS-Reserved(8), SYS-Reserved2(9)
- *   - DEVELOPMENT (10-19): Same as PROD but +10 offset
+ * - Platform Common Ports (offsets 0-19):
+ *   - SSH: 0, MySQL: 1, PostgreSQL: 2, n8n: 6
+ *   - WordPress: 11, 12, 13
+ *   - Next.js blog: 16, 17
+ *
+ * - Project Ports (10 ports each, starting from offset 20):
+ *   - Base: platform_base + 20 + (project_sn * 10)
+ *   - Backend: nodejs(0), python(1), graphql(2), rest(3)
+ *   - Frontend: nextjs(5), sveltekit(6)
  */
 
 const fs = require('fs');
@@ -36,31 +39,25 @@ const MAX_PLATFORMS = parseInt(process.env.MAX_PLATFORMS || '45', 10);
 const MAX_PROJECTS_PER_PLATFORM = parseInt(process.env.MAX_PROJECTS_PER_PLATFORM || '10', 10);
 
 // Port offset definitions
-const PORT_OFFSETS = {
-  production: {
-    beNodejs: 0,
-    bePython: 1,
-    apiGraphql: 2,
-    apiRest: 3,
-    apiReserved: 4,
-    feNextjs: 5,
-    feSveltekit: 6,
-    feReserved: 7,
-    sysReserved: 8,
-    sysReserved2: 9
-  },
-  development: {
-    beNodejs: 10,
-    bePython: 11,
-    apiGraphql: 12,
-    apiRest: 13,
-    apiReserved: 14,
-    feNextjs: 15,
-    feSveltekit: 16,
-    feReserved: 17,
-    sysReserved: 18,
-    sysReserved2: 19
-  }
+const PLATFORM_PORT_OFFSETS = {
+  ssh: 0,
+  mysql: 1,
+  postgres: 2,
+  n8n: 6,
+  wordpress1: 11,
+  wordpress2: 12,
+  wordpress3: 13,
+  nextjsBlog1: 16,
+  nextjsBlog2: 17
+};
+
+const PROJECT_PORT_OFFSETS = {
+  beNodejs: 0,
+  bePython: 1,
+  apiGraphql: 2,
+  apiRest: 3,
+  feNextjs: 5,
+  feSveltekit: 6
 };
 
 /**
@@ -81,7 +78,8 @@ function calculateProjectBasePort(platformSn, projectSn) {
     throw new Error(`Project SN must be between 0 and ${MAX_PROJECTS_PER_PLATFORM - 1}`);
   }
   const platformBasePort = calculatePlatformBasePort(platformSn);
-  return platformBasePort + (projectSn * PORTS_PER_PROJECT);
+  // Projects start at offset 20 (after platform common ports 0-19)
+  return platformBasePort + 20 + (projectSn * PORTS_PER_PROJECT);
 }
 
 /**
@@ -165,6 +163,15 @@ function getNextProjectSn(projectsJsonPath, platformId) {
 function generatePlatformPorts(platformSn) {
   const basePort = calculatePlatformBasePort(platformSn);
 
+  const platformPorts = {};
+  Object.entries(PLATFORM_PORT_OFFSETS).forEach(([key, offset]) => {
+    platformPorts[key] = {
+      port: basePort + offset,
+      offset: offset,
+      envVar: `PLATFORM_${key.toUpperCase()}_PORT_${platformSn}`
+    };
+  });
+
   return {
     sn: platformSn,
     basePort: basePort,
@@ -172,6 +179,11 @@ function generatePlatformPorts(platformSn) {
     portRange: {
       start: basePort,
       end: basePort + PORTS_PER_PLATFORM - 1
+    },
+    platformPorts: platformPorts,
+    projectPortRange: {
+      start: basePort + 20,
+      end: basePort + 20 + (MAX_PROJECTS_PER_PLATFORM * PORTS_PER_PROJECT) - 1
     },
     envVar: `BASE_PLATFORM_PORT_${platformSn}`,
     maxProjects: MAX_PROJECTS_PER_PLATFORM
@@ -193,26 +205,14 @@ function generateProjectPorts(platformSn, projectSn) {
       end: basePort + PORTS_PER_PROJECT - 1
     },
     envVar: `BASE_PROJECT_PORT_${platformSn}_${projectSn}`,
-    production: {},
-    development: {}
+    projectPorts: {}
   };
 
-  // Generate production ports
-  Object.entries(PORT_OFFSETS.production).forEach(([key, offset]) => {
+  // Generate project ports
+  Object.entries(PROJECT_PORT_OFFSETS).forEach(([key, offset]) => {
     const port = basePort + offset;
-    const envVarName = generateEnvVarName(key, platformSn, projectSn, 'PROD');
-    ports.production[key] = {
-      port: port,
-      offset: offset,
-      envVar: envVarName
-    };
-  });
-
-  // Generate development ports
-  Object.entries(PORT_OFFSETS.development).forEach(([key, offset]) => {
-    const port = basePort + offset;
-    const envVarName = generateEnvVarName(key, platformSn, projectSn, 'DEV');
-    ports.development[key] = {
+    const envVarName = generateEnvVarName(key, platformSn, projectSn);
+    ports.projectPorts[key] = {
       port: port,
       offset: offset,
       envVar: envVarName
@@ -225,22 +225,18 @@ function generateProjectPorts(platformSn, projectSn) {
 /**
  * Generate environment variable name
  */
-function generateEnvVarName(portType, platformSn, projectSn, env) {
+function generateEnvVarName(portType, platformSn, projectSn) {
   const typeMap = {
     beNodejs: 'BE_NODEJS',
     bePython: 'BE_PYTHON',
     apiGraphql: 'API_GRAPHQL',
     apiRest: 'API_REST',
-    apiReserved: 'API_RESERVED',
     feNextjs: 'FE_NEXTJS',
-    feSveltekit: 'FE_SVELTE',
-    feReserved: 'FE_RESERVED',
-    sysReserved: 'SYS_RESERVED',
-    sysReserved2: 'SYS_RESERVED2'
+    feSveltekit: 'FE_SVELTE'
   };
 
   const typeName = typeMap[portType] || portType.toUpperCase();
-  return `${typeName}_PORT_${platformSn}_${projectSn}_${env}`;
+  return `${typeName}_PORT_${platformSn}_${projectSn}`;
 }
 
 /**
@@ -262,26 +258,13 @@ function generateEnvFile(projectPorts, platformName, projectName, options = {}) 
     `BASE_PROJECT_PORT_${platformSn}_${projectSn}=${basePort}`,
     '',
     '#------------------------------------------------------------------------------',
-    '# PRODUCTION Ports (Offsets: 0-9)',
+    '# Project Ports (10 ports total)',
     '#------------------------------------------------------------------------------',
     ''
   ];
 
-  // Production ports
-  Object.entries(projectPorts.production).forEach(([key, portInfo]) => {
-    const description = getPortDescription(key);
-    lines.push(`# ${description}`);
-    lines.push(`${portInfo.envVar}=${portInfo.port}`);
-    lines.push('');
-  });
-
-  lines.push('#------------------------------------------------------------------------------');
-  lines.push('# DEVELOPMENT Ports (Offsets: 10-19)');
-  lines.push('#------------------------------------------------------------------------------');
-  lines.push('');
-
-  // Development ports
-  Object.entries(projectPorts.development).forEach(([key, portInfo]) => {
+  // Project ports
+  Object.entries(projectPorts.projectPorts).forEach(([key, portInfo]) => {
     const description = getPortDescription(key);
     lines.push(`# ${description}`);
     lines.push(`${portInfo.envVar}=${portInfo.port}`);
@@ -300,12 +283,8 @@ function getPortDescription(portType) {
     bePython: 'Backend (Python)',
     apiGraphql: 'API (GraphQL)',
     apiRest: 'API (REST)',
-    apiReserved: 'API (Reserved)',
     feNextjs: 'Frontend (Next.js)',
-    feSveltekit: 'Frontend (SvelteKit)',
-    feReserved: 'Frontend (Reserved)',
-    sysReserved: 'System Reserved',
-    sysReserved2: 'System Reserved 2'
+    feSveltekit: 'Frontend (SvelteKit)'
   };
 
   return descriptions[portType] || portType;
@@ -449,7 +428,8 @@ module.exports = {
   getPlatformSn,
   getNextPlatformSn,
   getNextProjectSn,
-  PORT_OFFSETS,
+  PLATFORM_PORT_OFFSETS,
+  PROJECT_PORT_OFFSETS,
   BASE_PLATFORMS_PORT,
   PORTS_PER_PLATFORM,
   PORTS_PER_PROJECT
